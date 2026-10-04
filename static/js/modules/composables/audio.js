@@ -1468,10 +1468,11 @@ export function useAudio(state, utils) {
     // Called by the merge modal (recording mode) on confirm: finalize the
     // recording session with the merge intent. `orderedSpec` is the ordered
     // source list with the string '__self__' marking this clip's position.
-    const finalizeRecordingMerge = async (orderedSpec, { deleteOriginals = true, title = undefined, notesSource = undefined } = {}) => {
+    const finalizeRecordingMerge = async (orderedSpec, { deleteOriginals = true, removeOriginalAudio = false, title = undefined, notesSource = undefined } = {}) => {
         const mergeIntent = {
             order: orderedSpec,
             delete_originals: !!deleteOriginals,
+            remove_original_audio: !deleteOriginals && !!removeOriginalAudio,
             title: title || undefined,
         };
         // notesSource: '__self__' | <id> | null. Only include the key when the

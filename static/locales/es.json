@@ -1446,7 +1446,15 @@
     "notesLabel": "Conservar notas de",
     "notesNone": "No conservar notas",
     "notesWarning": "Solo se pueden conservar las notas de una grabación. Los participantes y las etiquetas de todas las grabaciones se combinan.",
-    "notesHint": "Los participantes y las etiquetas de todas las grabaciones se combinan."
+    "notesHint": "Los participantes y las etiquetas de todas las grabaciones se combinan.",
+    "originalsLabel": "Después de combinar",
+    "originals_keep": "Conservar los originales",
+    "originals_keepHint": "Las grabaciones originales quedan como están.",
+    "originals_remove_audio": "Conservar los originales sin su audio",
+    "originals_remove_audioHint": "Los originales conservan su transcripción, resumen y notas; su audio se elimina cuando se guarda la grabación combinada, lo que libera espacio.",
+    "originals_delete": "Eliminar los originales",
+    "originals_deleteHint": "Las grabaciones originales se eliminan cuando se guarda la grabación combinada.",
+    "storageNotice": "No hay almacenamiento suficiente para conservar los originales con su audio. Consérvelos sin audio o elimínelos."
   },
   "messages": {
     "colorSchemeApplied": "Esquema de color aplicado",

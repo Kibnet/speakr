@@ -1446,7 +1446,15 @@
     "notesLabel": "Conserver les notes de",
     "notesNone": "Ne pas conserver de notes",
     "notesWarning": "Les notes d'un seul enregistrement peuvent être conservées. Les participants et les étiquettes de tous les enregistrements sont regroupés.",
-    "notesHint": "Les participants et les étiquettes de tous les enregistrements sont regroupés."
+    "notesHint": "Les participants et les étiquettes de tous les enregistrements sont regroupés.",
+    "originalsLabel": "Après la fusion",
+    "originals_keep": "Conserver les originaux",
+    "originals_keepHint": "Les enregistrements d'origine restent tels quels.",
+    "originals_remove_audio": "Conserver les originaux sans leur audio",
+    "originals_remove_audioHint": "Les originaux gardent leur transcription, leur résumé et leurs notes ; leur audio est supprimé une fois l'enregistrement fusionné sauvegardé, ce qui libère de l'espace.",
+    "originals_delete": "Supprimer les originaux",
+    "originals_deleteHint": "Les enregistrements d'origine sont supprimés une fois l'enregistrement fusionné sauvegardé.",
+    "storageNotice": "Le stockage ne suffit pas pour conserver les originaux avec leur audio. Conservez-les sans audio ou supprimez-les."
   },
   "messages": {
     "colorSchemeApplied": "Thème de couleurs appliqué",

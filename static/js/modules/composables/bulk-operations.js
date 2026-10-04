@@ -37,7 +37,11 @@ export function useBulkOperations({
     // Merge state
     const mergeOrderedList = ref([]);   // ordered array of recording objects
     const mergeTitle = ref('');
-    const mergeDeleteOriginals = ref(false);
+    // What happens to the sources after a merge: 'keep', 'remove_audio' (keep
+    // them without their audio, which frees the space, #413) or 'delete'.
+    const mergeOriginals = ref('keep');
+    // Set when the server refused to keep a second copy for the storage quota.
+    const mergeStorageNotice = ref('');
     const mergeInProgress = ref(false);
     // 'bulk' = merge existing recordings (POST /api/recordings/merge).
     // 'recording' = merge a just-recorded clip into existing ones; the list
@@ -377,7 +381,8 @@ export function useBulkOperations({
         mergeMode.value = 'bulk';
         mergeOrderedList.value = selectedRecordings.value.slice();
         mergeTitle.value = '';
-        mergeDeleteOriginals.value = false;
+        mergeOriginals.value = 'keep';
+        mergeStorageNotice.value = '';
         mergeNotesSourceId.value = null;
         mergeAddPickerOpen.value = false;
         mergeAddSearch.value = '';
@@ -397,7 +402,8 @@ export function useBulkOperations({
             notes: clipNotes || '',
         }];
         mergeTitle.value = '';
-        mergeDeleteOriginals.value = true;
+        mergeOriginals.value = 'delete';
+        mergeStorageNotice.value = '';
         mergeNotesSourceId.value = null;
         mergeAddPickerOpen.value = false;
         mergeAddSearch.value = '';
@@ -417,7 +423,8 @@ export function useBulkOperations({
         mergeMode.value = 'bulk';
         mergeOrderedList.value = (seedRecordings || []).slice();
         mergeTitle.value = title || '';
-        mergeDeleteOriginals.value = !!deleteOriginals;
+        mergeOriginals.value = deleteOriginals ? 'delete' : 'keep';
+        mergeStorageNotice.value = '';
         mergeNotesSourceId.value = null;
         mergeAddPickerOpen.value = false;
         mergeAddSearch.value = '';
@@ -474,12 +481,13 @@ export function useBulkOperations({
             const hasExisting = orderedSpec.some(x => x !== '__self__');
             if (!hasExisting || typeof finalizeRecordingMerge !== 'function') return;
             const title = mergeTitle.value.trim() || undefined;
-            const deleteOriginals = mergeDeleteOriginals.value;
+            const deleteOriginals = mergeOriginals.value === 'delete';
+            const removeOriginalAudio = mergeOriginals.value === 'remove_audio';
             // notes source: 'none' -> keep none (null); else the id or '__self__'.
             const notesSource = mergeNotesSourceId.value === 'none' ? null : mergeNotesSourceId.value;
             closeBulkMergeModal();
             try {
-                await finalizeRecordingMerge(orderedSpec, { deleteOriginals, title, notesSource });
+                await finalizeRecordingMerge(orderedSpec, { deleteOriginals, removeOriginalAudio, title, notesSource });
             } catch (error) {
                 console.error('Recording merge finalize error:', error);
                 setGlobalError(`Failed to start merge: ${error.message}`);
@@ -503,13 +511,22 @@ export function useBulkOperations({
                 body: JSON.stringify({
                     recording_ids: orderedIds,
                     title: mergeTitle.value.trim() || undefined,
-                    delete_originals: mergeDeleteOriginals.value,
+                    delete_originals: mergeOriginals.value === 'delete',
+                    remove_original_audio: mergeOriginals.value === 'remove_audio',
                     // 'none' -> keep no notes (null); otherwise the chosen source id.
                     notes_source_id: mergeNotesSourceId.value === 'none' ? null : mergeNotesSourceId.value
                 })
             });
 
             const data = await response.json();
+
+            // Not enough room to keep a second copy (#413): keep the dialog
+            // open, explain, and preselect keeping the originals without audio.
+            if (response.status === 507 && data.code === 'storage_quota_exceeded') {
+                mergeStorageNotice.value = _t('mergeRecordings.storageNotice', 'There is not enough storage to keep the originals with their audio. Keep them without their audio, or delete them.');
+                mergeOriginals.value = 'remove_audio';
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to merge recordings');
@@ -771,7 +788,8 @@ export function useBulkOperations({
         bulkReprocessType,
         mergeOrderedList,
         mergeTitle,
-        mergeDeleteOriginals,
+        mergeOriginals,
+        mergeStorageNotice,
         mergeInProgress,
         mergeAddPickerOpen,
         mergeAddSearch,

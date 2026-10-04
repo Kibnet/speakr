@@ -1446,7 +1446,15 @@
     "notesLabel": "Manter notas de",
     "notesNone": "Não manter notas",
     "notesWarning": "Somente as notas de uma gravação podem ser mantidas. Os participantes e as tags de todas as gravações são combinados.",
-    "notesHint": "Os participantes e as tags de todas as gravações são combinados."
+    "notesHint": "Os participantes e as tags de todas as gravações são combinados.",
+    "originalsLabel": "Depois de mesclar",
+    "originals_keep": "Manter os originais",
+    "originals_keepHint": "As gravações originais ficam como estão.",
+    "originals_remove_audio": "Manter os originais sem o áudio",
+    "originals_remove_audioHint": "Os originais mantêm transcrição, resumo e notas; o áudio deles é removido quando a gravação mesclada é salva, o que libera espaço.",
+    "originals_delete": "Excluir os originais",
+    "originals_deleteHint": "As gravações originais são excluídas quando a gravação mesclada é salva.",
+    "storageNotice": "Não há armazenamento suficiente para manter os originais com o áudio. Mantenha-os sem o áudio ou exclua-os."
   },
   "messages": {
     "colorSchemeApplied": "Esquema de cores aplicado",

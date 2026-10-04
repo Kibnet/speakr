@@ -1446,7 +1446,15 @@
     "notesLabel": "Keep notes from",
     "notesNone": "Don't keep notes",
     "notesWarning": "Only one recording's notes can be kept. Participants and tags from all recordings are combined.",
-    "notesHint": "Participants and tags from all recordings are combined."
+    "notesHint": "Participants and tags from all recordings are combined.",
+    "originalsLabel": "After merging",
+    "originals_keep": "Keep the originals",
+    "originals_keepHint": "The original recordings stay as they are.",
+    "originals_remove_audio": "Keep the originals without their audio",
+    "originals_remove_audioHint": "The originals keep their transcripts, summaries and notes; their audio is removed once the merged recording is saved, which frees the space.",
+    "originals_delete": "Delete the originals",
+    "originals_deleteHint": "The original recordings are deleted once the merged recording is saved.",
+    "storageNotice": "There is not enough storage to keep the originals with their audio. Keep them without their audio, or delete them."
   },
   "messages": {
     "colorSchemeApplied": "Color scheme applied",

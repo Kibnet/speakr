@@ -1446,7 +1446,15 @@
     "notesLabel": "Notizen übernehmen von",
     "notesNone": "Keine Notizen übernehmen",
     "notesWarning": "Es können nur die Notizen einer Aufnahme übernommen werden. Teilnehmer und Tags aller Aufnahmen werden zusammengeführt.",
-    "notesHint": "Teilnehmer und Tags aller Aufnahmen werden zusammengeführt."
+    "notesHint": "Teilnehmer und Tags aller Aufnahmen werden zusammengeführt.",
+    "originalsLabel": "Nach dem Zusammenführen",
+    "originals_keep": "Originale behalten",
+    "originals_keepHint": "Die ursprünglichen Aufnahmen bleiben unverändert.",
+    "originals_remove_audio": "Originale ohne Audio behalten",
+    "originals_remove_audioHint": "Die Originale behalten Transkript, Zusammenfassung und Notizen; ihr Audio wird entfernt, sobald die zusammengeführte Aufnahme gespeichert ist, und gibt so Speicher frei.",
+    "originals_delete": "Originale löschen",
+    "originals_deleteHint": "Die ursprünglichen Aufnahmen werden gelöscht, sobald die zusammengeführte Aufnahme gespeichert ist.",
+    "storageNotice": "Der Speicher reicht nicht, um die Originale mit Audio zu behalten. Behalten Sie sie ohne Audio oder löschen Sie sie."
   },
   "messages": {
     "colorSchemeApplied": "Farbschema angewendet",

@@ -4988,3 +4988,9 @@ select:disabled {
     unicode-bidi: plaintext;
     text-align: start;
 }
+
+/* Header usage meters (#413): with both the token budget and a storage
+   quota, the two sit one above the other, compact. */
+.usage-meters--stacked .usage-meter { padding-top: 0; padding-bottom: 0; font-size: 10px; line-height: 1.2; gap: 0.3rem; }
+.usage-meters--stacked .usage-meter span { min-width: 2.2rem; text-align: right; font-variant-numeric: tabular-nums; }
+.usage-meters--stacked .usage-meter > div { height: 3px; }

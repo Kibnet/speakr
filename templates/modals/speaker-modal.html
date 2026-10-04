@@ -336,10 +336,14 @@
         <div class="modal-footer modal-footer--between flex-wrap gap-y-2">
             <div class="flex items-center gap-2">
                 <div class="relative inline-flex" ref="autoIdSplitBtn">
+                    <!-- Identifies speakers from names mentioned in the conversation,
+                         with the text model. It predates voice profiles: voice
+                         matches already appear as suggestions without it (#403). -->
                     <button @click="autoIdentifySpeakers(false)"
                             class="btn btn--primary"
                             style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
-                            :disabled="isAutoIdentifying">
+                            :disabled="isAutoIdentifying || {{ 'false' if text_model_configured else 'true' }}"
+                            :title="{{ 'true' if text_model_configured else 'false' }} ? t('help.autoIdentifyTooltip') : t('help.autoIdentifyNoModel')">
                         <i class="fas fa-magic"></i>
                         <span v-if="!isAutoIdentifying" class="hidden sm:inline" v-text="t('help.autoIdentify')"></span>
                         <span v-if="!isAutoIdentifying" class="sm:hidden" v-text="t('help.autoIdentifyMobile')"></span>
@@ -348,7 +352,7 @@
                     <button @click="showAutoIdDropdown = !showAutoIdDropdown"
                             class="btn btn--primary btn--icon"
                             style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 1px solid rgba(255,255,255,0.2);"
-                            :disabled="isAutoIdentifying"
+                            :disabled="isAutoIdentifying || {{ 'false' if text_model_configured else 'true' }}"
                             :aria-label="t('help.identifyAllSpeakers')">
                         <i class="fas fa-caret-down"></i>
                     </button>

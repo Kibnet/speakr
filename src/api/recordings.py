@@ -1286,6 +1286,11 @@ def reset_status(recording_id):
 # --- Authentication Routes ---
 
 
+def _text_model_configured():
+    from src.services.llm import TEXT_MODEL_CONFIGURED
+    return TEXT_MODEL_CONFIGURED
+
+
 @recordings_bp.route('/')
 @recordings_bp.route('/recordings/<int:recording_id>')
 @recordings_bp.route('/label/<label_name>')
@@ -1384,7 +1389,8 @@ def index(recording_id=None, label_name=None):
                          server_recording_chunks_enabled=server_recording_chunks_enabled,
                          recording_max_hours=recording_max_hours,
                          recording_chunk_seconds=recording_chunk_seconds,
-                         recording_video_kbps=recording_video_kbps)
+                         recording_video_kbps=recording_video_kbps,
+                         text_model_configured=_text_model_configured())
 
 
 

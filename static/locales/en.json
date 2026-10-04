@@ -1199,8 +1199,8 @@
     "audioDeletedMessage": "The audio file was removed. The transcript, summary and notes remain available.",
     "audioDeletedTitle": "Audio file deleted",
     "audioPlayer": "Audio Player",
-    "autoIdentify": "Auto Identify",
-    "autoIdentifyMobile": "Auto",
+    "autoIdentify": "Identify from conversation",
+    "autoIdentifyMobile": "From context",
     "bothAudioDesc": "Records your voice + meeting participants (recommended for online meetings)",
     "clearFilters": "clear filters",
     "clickToAddNotes": "Click to add notes...",
@@ -1230,7 +1230,7 @@
     "generatingSummary": "Generating summary...",
     "groups": "groups",
     "howToRecordSystemAudio": "How to Record System Audio",
-    "identifyAllSpeakers": "Identify all speakers",
+    "identifyAllSpeakers": "Re-identify all from conversation",
     "identifying": "Identifying...",
     "importantNote": "Important note",
     "internalSharingDesc": "Share with specific users in your organization",
@@ -1301,7 +1301,9 @@
     "whyNotWorking": "Why isn't it working?",
     "youHaveXSpeakers": "You have {{count}} speakers, but only 16 unique colors are available. Colors will repeat after the 16th speaker.",
     "createTagNamed": "Create tag \"{{name}}\"",
-    "newTag": "New tag"
+    "newTag": "New tag",
+    "autoIdentifyTooltip": "Reads names mentioned in the conversation. Voice matches appear as suggestions without this.",
+    "autoIdentifyNoModel": "Needs a text model, and none is configured. Voice matches appear as suggestions without it."
   },
   "incognito": {
     "audioNotStored": "Audio not stored in incognito mode",

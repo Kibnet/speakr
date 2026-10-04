@@ -1199,8 +1199,8 @@
     "audioDeletedMessage": "Die Audiodatei wurde entfernt. Transkript, Zusammenfassung und Notizen bleiben verfügbar.",
     "audioDeletedTitle": "Audiodatei gelöscht",
     "audioPlayer": "Audio-Player",
-    "autoIdentify": "Automatisch identifizieren",
-    "autoIdentifyMobile": "Auto",
+    "autoIdentify": "Aus dem Gespräch erkennen",
+    "autoIdentifyMobile": "Aus Kontext",
     "bothAudioDesc": "Nimmt Ihre Stimme + Meeting-Teilnehmer auf (empfohlen für Online-Meetings)",
     "clearFilters": "Filter löschen",
     "clickToAddNotes": "Klicken um Notizen hinzuzufügen...",
@@ -1230,7 +1230,7 @@
     "generatingSummary": "Generiere Zusammenfassung...",
     "groups": "Gruppen",
     "howToRecordSystemAudio": "Wie man System-Audio aufnimmt",
-    "identifyAllSpeakers": "Alle Sprecher identifizieren",
+    "identifyAllSpeakers": "Alle aus dem Gespräch neu erkennen",
     "identifying": "Identifiziere...",
     "importantNote": "Wichtiger Hinweis",
     "internalSharingDesc": "Mit bestimmten Benutzern in Ihrer Organisation teilen",
@@ -1301,7 +1301,9 @@
     "whyNotWorking": "Warum funktioniert es nicht?",
     "youHaveXSpeakers": "Sie haben {{count}} Sprecher, aber nur 16 eindeutige Farben sind verfügbar. Die Farben wiederholen sich nach dem 16. Sprecher.",
     "createTagNamed": "Tag \"{{name}}\" erstellen",
-    "newTag": "Neues Tag"
+    "newTag": "Neues Tag",
+    "autoIdentifyTooltip": "Liest im Gespräch genannte Namen. Stimmtreffer erscheinen auch ohne dies als Vorschläge.",
+    "autoIdentifyNoModel": "Benötigt ein Textmodell, und keines ist eingerichtet. Stimmtreffer erscheinen auch ohne als Vorschläge."
   },
   "incognito": {
     "audioNotStored": "Audio wird im Inkognito-Modus nicht gespeichert",

@@ -1199,8 +1199,8 @@
     "audioDeletedMessage": "音频文件已删除。转录文本、摘要和笔记仍可查看。",
     "audioDeletedTitle": "音频文件已删除",
     "audioPlayer": "音频播放器",
-    "autoIdentify": "自动识别",
-    "autoIdentifyMobile": "自动",
+    "autoIdentify": "从对话中识别",
+    "autoIdentifyMobile": "从上下文",
     "bothAudioDesc": "录制您的声音 + 会议参与者（推荐用于在线会议）",
     "clearFilters": "清除筛选",
     "clickToAddNotes": "点击添加笔记...",
@@ -1230,7 +1230,7 @@
     "generatingSummary": "生成摘要中...",
     "groups": "组",
     "howToRecordSystemAudio": "如何录制系统音频",
-    "identifyAllSpeakers": "识别所有发言人",
+    "identifyAllSpeakers": "从对话中重新识别全部",
     "identifying": "识别中...",
     "importantNote": "重要提示",
     "internalSharingDesc": "与您组织中的特定用户分享",
@@ -1301,7 +1301,9 @@
     "whyNotWorking": "为什么不工作？",
     "youHaveXSpeakers": "您有 {{count}} 位发言人，但只有16种独特的颜色可用。颜色将在第16位发言人之后重复。",
     "createTagNamed": "创建标签\"{{name}}\"",
-    "newTag": "新建标签"
+    "newTag": "新建标签",
+    "autoIdentifyTooltip": "读取对话中提到的名字。声纹匹配无需此功能也会显示为建议。",
+    "autoIdentifyNoModel": "需要文本模型，但尚未配置。声纹匹配无需它也会显示为建议。"
   },
   "incognito": {
     "audioNotStored": "隐身模式下不会保存音频",

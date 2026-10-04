@@ -2685,7 +2685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Virtual scroll for ASR editor modal (uses editingSegments)
             const asrEditorVirtualScroll = useVirtualScroll({
                 items: editingSegments,
-                itemHeight: 44,  // Table row height
+                itemHeight: 76,  // Bounded two-line workplace segment preview
                 containerRef: asrEditorRef,
                 overscan: 10
             });
@@ -2764,7 +2764,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             };
             // Speakers composable needs processedTranscription and scrollToSegmentIndex
-            const speakersComposable = useSpeakers(state, utils, processedTranscription);
+            const speakersComposable = useSpeakers(state, {...utils,
+                canEditAsrDraft: () => !transcriptionComposable.asrEditingLocked?.value
+            }, processedTranscription);
             const speakerModalComposable = useSpeakerModal(state, utils);
 
             // Recording ids in the order the sidebar shows them, for

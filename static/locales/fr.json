@@ -1199,8 +1199,8 @@
     "audioDeletedMessage": "Le fichier audio a été supprimé. La transcription, le résumé et les notes restent disponibles.",
     "audioDeletedTitle": "Fichier audio supprimé",
     "audioPlayer": "Lecteur Audio",
-    "autoIdentify": "Identifier Automatiquement",
-    "autoIdentifyMobile": "Auto",
+    "autoIdentify": "Identifier d'après la conversation",
+    "autoIdentifyMobile": "Par contexte",
     "bothAudioDesc": "Enregistre votre voix + les participants à la réunion (recommandé pour les réunions en ligne)",
     "clearFilters": "effacer les filtres",
     "clickToAddNotes": "Cliquez pour ajouter des notes...",
@@ -1230,7 +1230,7 @@
     "generatingSummary": "Génération du résumé...",
     "groups": "groupes",
     "howToRecordSystemAudio": "Comment Enregistrer l'Audio Système",
-    "identifyAllSpeakers": "Identifier tous les orateurs",
+    "identifyAllSpeakers": "Tout réidentifier d'après la conversation",
     "identifying": "Identification...",
     "importantNote": "Note importante",
     "internalSharingDesc": "Partager avec des utilisateurs spécifiques de votre organisation",
@@ -1301,7 +1301,9 @@
     "whyNotWorking": "Pourquoi ça ne marche pas?",
     "youHaveXSpeakers": "Vous avez {{count}} locuteurs, mais seulement 16 couleurs uniques sont disponibles. Les couleurs se répéteront après le 16ème locuteur.",
     "createTagNamed": "Créer le tag \"{{name}}\"",
-    "newTag": "Nouveau tag"
+    "newTag": "Nouveau tag",
+    "autoIdentifyTooltip": "Lit les noms mentionnés dans la conversation. Les correspondances vocales apparaissent comme suggestions sans cela.",
+    "autoIdentifyNoModel": "Nécessite un modèle de texte, et aucun n'est configuré. Les correspondances vocales apparaissent comme suggestions sans lui."
   },
   "incognito": {
     "audioNotStored": "Audio non stocké en mode incognito",

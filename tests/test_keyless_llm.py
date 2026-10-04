@@ -113,3 +113,29 @@ def test_without_a_model_the_call_says_so(monkeypatch):
     monkeypatch.setattr(llm, "client", None)
     with pytest.raises(ValueError, match="No text model is configured"):
         llm.call_llm_completion([{"role": "user", "content": "hi"}])
+
+
+@pytest.mark.parametrize('configured,expected', [(True, 'isAutoIdentifying || false'), (False, 'isAutoIdentifying || true')])
+def test_identify_from_conversation_is_disabled_without_a_model(monkeypatch, configured, expected):
+    """The button reads names from the conversation with the text model; voice
+    matches need no model and appear as suggestions anyway."""
+    import secrets
+    from src.app import app, db
+    from src.models import User
+    monkeypatch.setattr(llm, 'TEXT_MODEL_CONFIGURED', configured)
+    app.config['WTF_CSRF_ENABLED'] = False
+    with app.app_context():
+        s = secrets.token_hex(4)
+        u = User(username=f'idb_{s}', email=f'idb_{s}@local.test', password='x')
+        db.session.add(u)
+        db.session.commit()
+        try:
+            client = app.test_client()
+            with client.session_transaction() as sess:
+                sess['_user_id'] = str(u.id)
+            page = client.get('/')
+            assert page.status_code == 200
+            assert expected in page.get_data(as_text=True)
+        finally:
+            db.session.delete(u)
+            db.session.commit()

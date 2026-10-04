@@ -1199,8 +1199,8 @@
     "audioDeletedMessage": "O arquivo de áudio foi removido. A transcrição, o resumo e as notas continuam disponíveis.",
     "audioDeletedTitle": "Arquivo de áudio deletado",
     "audioPlayer": "Reprodutor de Áudio",
-    "autoIdentify": "Identificar Automaticamente",
-    "autoIdentifyMobile": "Auto",
+    "autoIdentify": "Identificar pela conversa",
+    "autoIdentifyMobile": "Pelo contexto",
     "bothAudioDesc": "Grava sua voz + áudio dos participantes da reunião (recomendado para reuniões online)",
     "clearFilters": "limpar filtros",
     "clickToAddNotes": "Clique para adicionar notas...",
@@ -1230,7 +1230,7 @@
     "generatingSummary": "Gerando resumo...",
     "groups": "grupos",
     "howToRecordSystemAudio": "Como Gravar Áudio do Sistema",
-    "identifyAllSpeakers": "Identificar todos os oradores",
+    "identifyAllSpeakers": "Reidentificar todos pela conversa",
     "identifying": "Identificando...",
     "importantNote": "Nota importante",
     "internalSharingDesc": "Compartilhe com usuários específicos em sua organização",
@@ -1301,7 +1301,9 @@
     "whyNotWorking": "Por que não está funcionando?",
     "youHaveXSpeakers": "Você tem {{count}} oradores, mas apenas 16 cores únicas estão disponíveis. As cores se repetirão após o 16º orador.",
     "createTagNamed": "Criar tag \"{{name}}\"",
-    "newTag": "Nova tag"
+    "newTag": "Nova tag",
+    "autoIdentifyTooltip": "Lê os nomes mencionados na conversa. As correspondências de voz aparecem como sugestões sem isso.",
+    "autoIdentifyNoModel": "Precisa de um modelo de texto, e nenhum está configurado. As correspondências de voz aparecem como sugestões sem ele."
   },
   "incognito": {
     "audioNotStored": "Áudio não armazenado em modo incógnito",

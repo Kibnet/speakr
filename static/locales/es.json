@@ -116,7 +116,11 @@
     "storageOfQuota": "{{used}} de {{quota}}",
     "storageNoLimit": "{{used}} usados, sin límite",
     "storageFull": "Su almacenamiento está lleno. Las subidas y las grabaciones nuevas se rechazan hasta que elimine grabaciones o quite su audio.",
-    "storageHelp": "Cuenta el audio y el vídeo que conserva. Las grabaciones sin audio no cuentan."
+    "storageHelp": "Cuenta el audio y el vídeo que conserva. Las grabaciones sin audio no cuentan.",
+    "usageAndLimits": "Uso y límites",
+    "aiTokensMonth": "Tokens de IA este mes",
+    "transcriptionMonth": "Transcripción este mes",
+    "usageHelp": "Los tokens de IA y los minutos de transcripción cuentan desde el inicio de cada mes. El almacenamiento cuenta el audio y el vídeo que conserva; las grabaciones sin audio no cuentan."
   },
   "accountTabs": {
     "about": "Acerca de",

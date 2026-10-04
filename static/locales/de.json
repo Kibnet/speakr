@@ -116,7 +116,11 @@
     "storageOfQuota": "{{used}} von {{quota}}",
     "storageNoLimit": "{{used}} belegt, keine Begrenzung",
     "storageFull": "Ihr Speicher ist voll. Uploads und neue Aufnahmen werden abgelehnt, bis Sie Aufnahmen löschen oder deren Audio entfernen.",
-    "storageHelp": "Zählt das Audio und Video, das Sie behalten. Aufnahmen mit entferntem Audio zählen nicht."
+    "storageHelp": "Zählt das Audio und Video, das Sie behalten. Aufnahmen mit entferntem Audio zählen nicht.",
+    "usageAndLimits": "Nutzung und Limits",
+    "aiTokensMonth": "KI-Tokens diesen Monat",
+    "transcriptionMonth": "Transkription diesen Monat",
+    "usageHelp": "KI-Tokens und Transkriptionsminuten zählen ab Monatsbeginn. Der Speicher zählt das Audio und Video, das Sie behalten; Aufnahmen mit entferntem Audio zählen nicht."
   },
   "accountTabs": {
     "about": "Über",

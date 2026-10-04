@@ -623,6 +623,39 @@ def _storage_usage(user):
         return None
 
 
+def _usage_limits(user):
+    """AI tokens and transcription minutes this month, and storage, each
+    against its limit when one is set, for the Account page (#413)."""
+    def size(n):
+        return f"{n / 1073741824:.1f} GB" if n >= 1073741824 else f"{n / 1048576:.1f} MB"
+
+    def row(key, label_key, icon, used, limit, fmt):
+        pct = round(used / limit * 100, 1) if limit else None
+        return {'key': key, 'label_key': label_key, 'icon': icon, 'used': fmt(used),
+                'limit': fmt(limit) if limit else None, 'percentage': pct}
+
+    rows = []
+    try:
+        from src.services.token_tracking import token_tracker
+        rows.append(row('tokens', 'account.aiTokensMonth', 'fa-coins',
+                        int(token_tracker.get_monthly_usage(user.id) or 0), user.monthly_token_budget,
+                        lambda n: f"{int(n):,}"))
+    except Exception as e:
+        current_app.logger.warning(f"Could not read token usage for user {user.id}: {e}")
+    try:
+        from src.services.transcription_tracking import transcription_tracker
+        seconds = int(transcription_tracker.get_monthly_usage(user.id) or 0)
+        budget = user.monthly_transcription_budget
+        rows.append(row('transcription', 'account.transcriptionMonth', 'fa-microphone',
+                        seconds // 60, (budget // 60) if budget else None, lambda n: f"{int(n):,} min"))
+    except Exception as e:
+        current_app.logger.warning(f"Could not read transcription usage for user {user.id}: {e}")
+    storage = _storage_usage(user)
+    if storage:
+        rows.append(row('storage', 'account.storage', 'fa-hdd', storage['used_bytes'], storage['quota_bytes'], size))
+    return rows
+
+
 @auth_bp.route('/api/account/storage', methods=['GET'])
 @login_required
 def account_storage():
@@ -880,6 +913,7 @@ def account():
     return render_template('account.html',
                            title='Account',
                            storage_usage=_storage_usage(current_user),
+                           usage_limits=_usage_limits(current_user),
                            default_summary_prompt_text=default_summary_prompt_text,
                            default_title_prompt_text=default_title_prompt_text,
                            use_asr_endpoint=USE_ASR_ENDPOINT,

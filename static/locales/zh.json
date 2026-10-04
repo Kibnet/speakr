@@ -116,7 +116,11 @@
     "storageOfQuota": "{{used}} / {{quota}}",
     "storageNoLimit": "已用 {{used}}，不限制",
     "storageFull": "您的存储已满。在删除录音或删除其音频之前，上传和新录音都会被拒绝。",
-    "storageHelp": "计入您保留的音频和视频。已删除音频的录音不计入。"
+    "storageHelp": "计入您保留的音频和视频。已删除音频的录音不计入。",
+    "usageAndLimits": "用量与限额",
+    "aiTokensMonth": "本月 AI 令牌",
+    "transcriptionMonth": "本月转录",
+    "usageHelp": "AI 令牌和转录分钟数从每月月初开始计算。存储计入您保留的音频和视频；已删除音频的录音不计入。"
   },
   "accountTabs": {
     "about": "关于",

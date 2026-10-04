@@ -1446,7 +1446,15 @@
     "notesLabel": "保留备注来自",
     "notesNone": "不保留备注",
     "notesWarning": "只能保留一条录音的备注。所有录音的参与者和标签将被合并。",
-    "notesHint": "所有录音的参与者和标签将被合并。"
+    "notesHint": "所有录音的参与者和标签将被合并。",
+    "originalsLabel": "合并之后",
+    "originals_keep": "保留原录音",
+    "originals_keepHint": "原录音保持不变。",
+    "originals_remove_audio": "保留原录音但删除其音频",
+    "originals_remove_audioHint": "原录音保留转录、摘要和笔记；合并录音保存后删除其音频，从而释放空间。",
+    "originals_delete": "删除原录音",
+    "originals_deleteHint": "合并录音保存后删除原录音。",
+    "storageNotice": "存储空间不足，无法连同音频保留原录音。请保留但删除其音频，或删除原录音。"
   },
   "messages": {
     "colorSchemeApplied": "已应用配色方案",

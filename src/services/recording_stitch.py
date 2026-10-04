@@ -490,6 +490,7 @@ def _try_kickoff_merge(recording, user_id, metadata) -> bool:
             source_ids,
             title=(intent.get('title') or None),
             delete_originals=bool(intent.get('delete_originals', False)),
+            remove_original_audio=bool(intent.get('remove_original_audio', False)),
             require_settled=False,
             notes_source_id=notes_source_id,
         )

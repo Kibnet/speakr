@@ -786,6 +786,9 @@ def merge_recordings_endpoint():
       - title (str, optional): title for the merged recording.
       - delete_originals (bool, optional): delete the sources after a successful
         merge (default False).
+      - remove_original_audio (bool, optional): keep the sources but remove
+        their audio after a successful merge (#413); ignored with
+        delete_originals.
 
     Validation happens in-request; the audio concat runs later on a worker
     (job_type 'merge'), so a long merge never blocks the request. The merged
@@ -807,6 +810,7 @@ def merge_recordings_endpoint():
 
     title = data.get('title')
     delete_originals = bool(data.get('delete_originals', False))
+    remove_original_audio = bool(data.get('remove_original_audio', False)) and not delete_originals
 
     # notes_source_id: which source's notes to keep on the merged recording.
     #   key absent      -> default to the first source
@@ -824,8 +828,9 @@ def merge_recordings_endpoint():
     else:
         notes_source_id = _UNSET
 
-    # Storage quota (#413): keeping the originals adds a copy of their audio.
-    if not delete_originals:
+    # Storage quota (#413): keeping the originals with their audio adds a copy.
+    # The answer names the two ways out the merge dialog offers.
+    if not delete_originals and not remove_original_audio:
         from src.services.storage_quota import check_room, StorageQuotaExceeded
         merged_bytes = db.session.query(db.func.coalesce(db.func.sum(Recording.file_size), 0)).filter(
             Recording.id.in_([int(i) for i in recording_ids if str(i).isdigit()]),
@@ -833,7 +838,10 @@ def merge_recordings_endpoint():
         try:
             check_room(current_user, int(merged_bytes))
         except StorageQuotaExceeded as quota_error:
-            return quota_error.response()
+            body, status = quota_error.response()
+            data_out = body.get_json()
+            data_out['merge_options'] = ['remove_original_audio', 'delete_originals']
+            return jsonify(data_out), status
 
     try:
         recording = create_merge_recording(
@@ -842,6 +850,7 @@ def merge_recordings_endpoint():
             title=title,
             delete_originals=delete_originals,
             notes_source_id=notes_source_id,
+            remove_original_audio=remove_original_audio,
         )
     except MergeError as e:
         return jsonify({'error': str(e)}), 400

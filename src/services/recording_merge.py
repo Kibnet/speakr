@@ -165,7 +165,7 @@ def _validate_sources(user, recording_ids, storage, require_settled=True):
 
 
 def create_merge_recording(user, recording_ids, title=None, delete_originals=False,
-                           require_settled=True, notes_source_id=_UNSET):
+                           require_settled=True, notes_source_id=_UNSET, remove_original_audio=False):
     """Validate sources and create a placeholder recording queued for merging.
 
     Runs in the request (or, with ``require_settled=False``, from the stitch
@@ -277,6 +277,9 @@ def create_merge_recording(user, recording_ids, title=None, delete_originals=Fal
             params={
                 'source_ids': ordered_ids,
                 'delete_originals': bool(delete_originals),
+                # Keep the sources but remove their audio once the merged file
+                # is stored: frees the space, keeps transcripts and notes (#413).
+                'remove_original_audio': bool(remove_original_audio) and not delete_originals,
             },
             is_new_upload=True,
         )
@@ -300,6 +303,7 @@ def run_merge_job(recording, params):
     source_ids = (params or {}).get('source_ids') or []
     part_ids = (params or {}).get('part_ids') or []
     delete_originals = bool((params or {}).get('delete_originals', False))
+    remove_original_audio = bool((params or {}).get('remove_original_audio', False))
 
     if len(source_ids) < 2 and len(part_ids) < 2:
         raise MergeError("Merge job is missing its source recordings.")
@@ -393,6 +397,18 @@ def run_merge_job(recording, params):
             except Exception as e:
                 db.session.rollback()
                 current_app.logger.warning(f"Failed to delete source recording {rec.id} after merge: {e}")
+    elif remove_original_audio:
+        # Same point as deletion: the merged audio is stored, so the sources'
+        # audio lives on in it. A source whose removal fails keeps its audio.
+        from src.services.retention import remove_recording_audio
+        for rec in sources:
+            if rec.audio_deleted_at:
+                continue
+            try:
+                remove_recording_audio(rec)
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.warning(f"Failed to remove the audio of source recording {rec.id} after merge: {e}")
 
     # Queue transcription with the SAME resolved params a normal upload gets, so
     # the merged file honors all of the owner's tag/folder/account preferences

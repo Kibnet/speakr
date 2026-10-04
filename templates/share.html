@@ -295,7 +295,7 @@
                             </div>
                             {% else %}
                             <!-- Plain Text View (for non-JSON transcriptions) -->
-                            <div class="whitespace-pre-wrap cursor-pointer hover:bg-[var(--bg-accent-hover)] p-2 rounded transition-colors">{{ transcript.plain_text }}</div>
+                            <div class="whitespace-pre-wrap bidi-auto cursor-pointer hover:bg-[var(--bg-accent-hover)] p-2 rounded transition-colors">{{ transcript.plain_text }}</div>
                             {% endif %}
                         </div>
                         {% else %}
@@ -359,7 +359,7 @@
                             </div>
 
                             <!-- Plain Text View (for non-JSON transcriptions) -->
-                            <div v-if="!processedTranscription.isJson" class="whitespace-pre-wrap cursor-pointer hover:bg-[var(--bg-accent-hover)] p-2 rounded transition-colors">
+                            <div v-if="!processedTranscription.isJson" class="whitespace-pre-wrap bidi-auto cursor-pointer hover:bg-[var(--bg-accent-hover)] p-2 rounded transition-colors">
                                 ${processedTranscription.content}
                             </div>
                         </div>

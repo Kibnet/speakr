@@ -163,8 +163,8 @@
                             <pre class="whitespace-pre-wrap font-mono">${message.thinking}</pre>
                         </div>
                     </div>
-                    <div v-if="message.html" v-html="message.html"></div>
-                    <div v-else class="whitespace-pre-wrap">${message.content}</div>
+                    <div v-if="message.html" class="bidi-auto" v-html="message.html"></div>
+                    <div v-else class="whitespace-pre-wrap bidi-auto">${message.content}</div>
                 </div>
 
                 <div v-if="isChatLoading" class="ai-message flex items-center gap-2">

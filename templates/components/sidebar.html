@@ -441,7 +441,7 @@
                             <!-- Title and Status Row -->
                             <div class="flex items-center justify-between mb-1"
                                  :class="{ 'pr-7': selectionMode }">
-                                <h4 class="font-medium text-sm truncate flex-1 mr-2" :class="selectedRecording?.id === recording.id && !selectionMode ? 'text-[var(--text-accent)]' : 'text-[var(--text-primary)]'">
+                                <h4 dir="auto" class="font-medium text-sm truncate flex-1 mr-2" :class="selectedRecording?.id === recording.id && !selectionMode ? 'text-[var(--text-accent)]' : 'text-[var(--text-primary)]'">
                                     ${ recording.title || t('common.untitled') }
                                 </h4>
                                 <div class="flex items-center gap-0.5 flex-shrink-0">

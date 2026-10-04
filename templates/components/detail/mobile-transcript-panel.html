@@ -117,7 +117,7 @@
                     <div v-if="processedTranscription.simpleSegments && processedTranscription.simpleSegments.length > 0">
                         <div v-for="(segment, index) in processedTranscription.simpleSegments" :key="`seg-${index}-${segment.startTime}`" :class="['transcript-segment cursor-pointer hover:bg-[var(--bg-accent-hover)] p-2 rounded transition-colors', { 'active-playing-segment': currentPlayingSegmentIndex === index }]" @click="seekAudioFromEvent" @dblclick.stop="openAsrEditorAtSegment(index)" :data-start-time="segment.startTime" :data-segment-index="index"><span v-if="showTimestampsSimpleView" class="speaker-segment-timestamp speaker-segment-timestamp--inline">${ formatTimestamp(segment.startTime) }</span>${segment.sentence}</div>
                     </div>
-                    <div v-else class="whitespace-pre-wrap">${processedTranscription.content}</div>
+                    <div v-else class="whitespace-pre-wrap bidi-auto">${processedTranscription.content}</div>
                 </div>
             </div>
             <div v-else-if="transcriptionViewMode === 'bubble'" class="transcription-with-speakers">

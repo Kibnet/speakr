@@ -129,4 +129,15 @@ def md_to_html(text):
     html = _markdown_instance.convert(processed_text)
 
     # Apply sanitization to the generated HTML
-    return sanitize_html(html)
+    return _with_auto_direction(sanitize_html(html))
+
+
+# Block elements that take their direction from their own text (#414): an
+# Arabic, Hebrew, Persian or Urdu paragraph or list reads right to left, with
+# its bullet on the right, while the rest of the summary stays left to right.
+# Code stays left to right.
+_AUTO_DIR_TAGS = re.compile(r'<(p|li|ul|ol|h[1-6]|blockquote|td|th|dt|dd)(?=[\s>])(?![^>]*\bdir=)')
+
+
+def _with_auto_direction(html):
+    return _AUTO_DIR_TAGS.sub(r'<\1 dir="auto"', html)

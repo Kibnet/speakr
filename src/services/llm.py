@@ -116,10 +116,13 @@ def get_chat_config():
     Get chat model configuration, falling back to TEXT_MODEL if not set.
 
     Returns a dict with api_key, base_url, model_name, and GPT-5 settings.
+    A dedicated chat model needs CHAT_MODEL_NAME and either its own key or
+    its own base URL; a local server often needs no key at all (#403).
     """
-    if CHAT_MODEL_API_KEY and CHAT_MODEL_NAME:
+    if CHAT_MODEL_NAME and (CHAT_MODEL_API_KEY or CHAT_MODEL_BASE_URL):
         return {
-            'api_key': CHAT_MODEL_API_KEY,
+            # The text model's key goes only to the text model's server.
+            'api_key': CHAT_MODEL_API_KEY or (TEXT_MODEL_API_KEY if (CHAT_MODEL_BASE_URL or TEXT_MODEL_BASE_URL) == TEXT_MODEL_BASE_URL else None),
             'base_url': CHAT_MODEL_BASE_URL or TEXT_MODEL_BASE_URL,
             'model_name': CHAT_MODEL_NAME,
             'gpt5_reasoning_effort': CHAT_GPT5_REASONING_EFFORT or os.environ.get("GPT5_REASONING_EFFORT", "medium"),
@@ -170,24 +173,27 @@ try:
 except Exception as client_init_e:
     client = None
 
-# Create chat client (may be same as main client if no separate config)
-chat_client = None
-try:
+def _build_chat_client():
+    """The chat client: the main client, or a dedicated one when the chat
+    model has its own key or server. The key is optional, since a local
+    server often runs without one (#403)."""
     chat_config = get_chat_config()
-    if chat_config['api_key']:
-        if CHAT_MODEL_API_KEY and CHAT_MODEL_API_KEY != TEXT_MODEL_API_KEY:
-            # Separate chat configuration - create dedicated client
-            chat_client = OpenAI(
-                api_key=chat_config['api_key'],
-                base_url=chat_config['base_url'],
-                http_client=http_client_no_proxy,
-                timeout=llm_timeout,
-                max_retries=LLM_MAX_RETRIES,
-            )
-            logger.info(f"Separate chat client initialized: {chat_config['base_url']} / {chat_config['model_name']}")
-        else:
-            # Use same client as main LLM
-            chat_client = client
+    if (chat_config['api_key'], chat_config['base_url']) == (TEXT_MODEL_API_KEY, TEXT_MODEL_BASE_URL):
+        return client
+    dedicated = OpenAI(
+        api_key=chat_config['api_key'] or "not-needed",
+        base_url=chat_config['base_url'],
+        http_client=http_client_no_proxy,
+        timeout=llm_timeout,
+        max_retries=LLM_MAX_RETRIES,
+    )
+    logger.info(f"Separate chat client initialized: {chat_config['base_url']} / {chat_config['model_name']}")
+    return dedicated
+
+
+# Create chat client (may be same as main client if no separate config)
+try:
+    chat_client = _build_chat_client()
 except Exception as chat_client_init_e:
     logger.warning(f"Failed to initialize chat client, falling back to main client: {chat_client_init_e}")
     chat_client = client
@@ -240,9 +246,6 @@ def call_llm_completion(messages, temperature=0.7, response_format=None, stream=
     """
     if not client:
         raise ValueError("LLM client not initialized")
-
-    if not TEXT_MODEL_API_KEY:
-        raise ValueError("TEXT_MODEL_API_KEY not configured")
 
     # Check budget before making the call
     if user_id and operation_type:

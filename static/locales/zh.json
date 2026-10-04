@@ -111,7 +111,12 @@
     "contextualSpeakerLabellingHelp": "由于您的转录引擎不提供声纹，说话人是根据对话上下文进行匹配的。这可能相当不准确，取决于对话在多大程度上透露了谁在说话，以及您的模型区分说话人的效果。若需最准确的基于语音的说话人匹配，建议使用 WhisperX ASR 容器。",
     "timezone": "时区",
     "timezoneAutomatic": "自动（此设备）",
-    "timezoneHelp": "用于命名模板生成的标题中的日期。页面上显示的日期始终跟随此设备。"
+    "timezoneHelp": "用于命名模板生成的标题中的日期。页面上显示的日期始终跟随此设备。",
+    "storage": "存储",
+    "storageOfQuota": "{{used}} / {{quota}}",
+    "storageNoLimit": "已用 {{used}}，不限制",
+    "storageFull": "您的存储已满。在删除录音或删除其音频之前，上传和新录音都会被拒绝。",
+    "storageHelp": "计入您保留的音频和视频。已删除音频的录音不计入。"
   },
   "accountTabs": {
     "about": "关于",
@@ -428,7 +433,12 @@
         "transcription": "转录"
       },
       "cacheLine": "提示缓存：本周期从缓存读取 {{reads}} 个令牌，写入 {{writes}} 个"
-    }
+    },
+    "storageQuota": "存储配额（MB）",
+    "storageQuotaPlaceholder": "不限制",
+    "storageQuotaNewPlaceholder": "使用系统设置中的默认值",
+    "storageQuotaHelp": "超出配额的上传会被拒绝。已删除音频的录音不计入。留空表示不限制。",
+    "storageUsedLabel": "已用存储"
   },
   "apiTokens": {
     "activeTokens": "活跃令牌",
@@ -917,7 +927,8 @@
     "uploadFailedWithStatus": "上传失败，状态：{{status}}",
     "uploadTimedOut": "上传超时",
     "validationError": "验证错误",
-    "waitAndRetryGuidance": "请等待几分钟后再重试"
+    "waitAndRetryGuidance": "请等待几分钟后再重试",
+    "shareTarget_storage_quota": "由于存储已满，共享的文件未保存。"
   },
   "eventExtraction": {
     "description": "启用后，AI将识别录音中提到的会议、约会和截止日期，并创建可下载的日历事件。",
@@ -1589,7 +1600,8 @@
     "dismiss": "忽略",
     "empty": "暂无需要处理的事项。",
     "view": "查看",
-    "voiceEmbeddingChanged": "转录服务返回的是另一个模型的声纹特征。声纹档案按模型分别保存：旧模型的档案不会匹配新录音，恢复先前的后端后即可重新使用；新模型的档案会在您为发言人命名时逐步建立。"
+    "voiceEmbeddingChanged": "转录服务返回的是另一个模型的声纹特征。声纹档案按模型分别保存：旧模型的档案不会匹配新录音，恢复先前的后端后即可重新使用；新模型的档案会在您为发言人命名时逐步建立。",
+    "storageQuotaReached": "由于存储已满（已用 {{used_mb}} MB，共 {{quota_mb}} MB），{{filename}} 仍留在监控文件夹中，有空间后会自动添加。"
   },
   "preferences": {
     "description": "显示与编辑器行为偏好。这些设置保存在您的账户中，并在所有设备上生效。",
@@ -2249,5 +2261,11 @@
     "secretBannerTitle": "立即复制此密钥 — 不会再次显示",
     "secretBannerHint": "用此密钥对每个接收方请求进行签名: 原始正文的 HMAC-SHA256。请求头: Speakr-Signature: sha256=<hex>",
     "copy": "复制"
+  },
+  "storageQuota": {
+    "title": "存储已满",
+    "guidance": "请删除录音或删除其音频，或请管理员提高配额。",
+    "uploadRefused": "此文件超出您的存储空间：已用 {{used}}，共 {{quota}}，文件大小 {{file}}。",
+    "recordingBlocked": "您的存储已满（已用 {{used}}，共 {{quota}}）。请先删除录音或删除其音频再录音。"
   }
 }

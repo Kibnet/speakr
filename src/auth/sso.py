@@ -229,6 +229,8 @@ def create_or_update_sso_user(userinfo: Dict[str, str]) -> User:
         sso_subject=subject,
         name=name_value,
     )
+    from src.services.storage_quota import default_quota_mb
+    user.storage_quota_mb = default_quota_mb()
     db.session.add(user)
     db.session.commit()
     return user

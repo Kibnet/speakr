@@ -54,6 +54,9 @@ class User(db.Model, UserMixin):
     # Transcription budget in seconds (None = unlimited)
     monthly_transcription_budget = db.Column(db.Integer, nullable=True)
 
+    # Storage quota in megabytes (None = unlimited, #413)
+    storage_quota_mb = db.Column(db.Integer, nullable=True)
+
     # Email verification fields
     email_verified = db.Column(db.Boolean, default=False)
     email_verification_token = db.Column(db.String(200), nullable=True, index=True)

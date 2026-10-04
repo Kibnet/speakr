@@ -66,7 +66,10 @@ class FileMonitor:
         self._valid_users = {}  # Maps user_id to username
         self._username_to_id = {}  # Maps username to user_id
         self._last_user_cache_update = 0
-        
+
+        # Files left in the folder for the storage quota, logged once (#413)
+        self._quota_skipped = set()
+
     def start(self):
         """Start the file monitoring in a background thread."""
         if self.running:
@@ -349,6 +352,22 @@ class FileMonitor:
 
                 # Derive original filename by removing .processing suffix
                 original_filename = processing_path.name.replace('.processing', '')
+
+                # Storage quota (#413): a file that does not fit stays in the
+                # folder untouched and is tried again on later scans; the user
+                # gets one notification, resolved when there is room.
+                from src.services.storage_quota import check_room, StorageQuotaExceeded, raise_notice
+                try:
+                    check_room(user, processing_path.stat().st_size)
+                except StorageQuotaExceeded as quota_error:
+                    original_path = processing_path.with_name(original_filename)
+                    processing_path.rename(original_path)
+                    if str(original_path) not in self._quota_skipped:
+                        self._quota_skipped.add(str(original_path))
+                        self.logger.info(f"Left {original_path} in the watch folder: {quota_error}")
+                        raise_notice(user, quota_error, original_filename)
+                    return
+                self._quota_skipped.discard(str(processing_path.with_name(original_filename)))
                 safe_filename = secure_filename(original_filename)
                 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
                 new_filename = f"auto_{timestamp}_{safe_filename}"

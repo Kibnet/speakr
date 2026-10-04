@@ -397,6 +397,10 @@ def _run_migrations(app, engine):
         if add_column_if_not_exists(engine, 'user', 'monthly_transcription_budget', 'INTEGER'):
             app.logger.info("Added monthly_transcription_budget column to user table")
 
+        # Storage quota in megabytes (#413)
+        if add_column_if_not_exists(engine, 'user', 'storage_quota_mb', 'INTEGER'):
+            app.logger.info("Added storage_quota_mb column to user table")
+
         # Naming templates feature
         if add_column_if_not_exists(engine, 'user', 'default_naming_template_id', 'INTEGER'):
             app.logger.info("Added default_naming_template_id column to user table")
@@ -855,6 +859,15 @@ def _run_migrations(app, engine):
             )
             app.logger.info("Initialized default transcript_length_limit setting")
             
+        if not SystemSetting.query.filter_by(key='default_storage_quota_mb').first():
+            SystemSetting.set_setting(
+                key='default_storage_quota_mb',
+                value='0',
+                description='Storage quota in megabytes (MB) given to new accounts. 0 means no limit. Existing accounts keep their own quota, set in Edit User.',
+                setting_type='integer'
+            )
+            app.logger.info("Initialized default default_storage_quota_mb setting")
+
         if not SystemSetting.query.filter_by(key='max_file_size_mb').first():
             SystemSetting.set_setting(
                 key='max_file_size_mb',

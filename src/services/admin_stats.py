@@ -224,6 +224,8 @@ def build_overview(days=30, today=None):
         tb, sb = u.monthly_token_budget, u.monthly_transcription_budget
         users.append({
             'id': u.id, 'username': u.username, 'recordings': n, 'storage': size,
+            'storage_quota': u.storage_quota_mb * 1024 * 1024 if u.storage_quota_mb else None,
+            'storage_pct': round(size / (u.storage_quota_mb * 1024 * 1024) * 100, 1) if u.storage_quota_mb else None,
             'last_recording_at': last.isoformat() + 'Z' if last else None,
             'tokens_month': tokens, 'token_budget': tb,
             'token_pct': round(tokens / tb * 100, 1) if tb else None,

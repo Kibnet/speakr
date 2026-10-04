@@ -111,7 +111,12 @@
     "contextualSpeakerLabellingHelp": "Los hablantes se identifican a partir del contexto de la conversación porque su motor de transcripción no proporciona huellas de voz. Esto puede ser bastante impreciso, según cuánto revele la conversación sobre quién habla y con qué precisión su modelo separa a los hablantes. Para la coincidencia de hablantes más precisa, basada en la voz, se recomienda el contenedor WhisperX ASR.",
     "timezone": "Zona horaria",
     "timezoneAutomatic": "Automática (este dispositivo)",
-    "timezoneHelp": "Se usa para las fechas de los títulos creados con plantillas de nombres. Las fechas mostradas en las páginas siguen siempre este dispositivo."
+    "timezoneHelp": "Se usa para las fechas de los títulos creados con plantillas de nombres. Las fechas mostradas en las páginas siguen siempre este dispositivo.",
+    "storage": "Almacenamiento",
+    "storageOfQuota": "{{used}} de {{quota}}",
+    "storageNoLimit": "{{used}} usados, sin límite",
+    "storageFull": "Su almacenamiento está lleno. Las subidas y las grabaciones nuevas se rechazan hasta que elimine grabaciones o quite su audio.",
+    "storageHelp": "Cuenta el audio y el vídeo que conserva. Las grabaciones sin audio no cuentan."
   },
   "accountTabs": {
     "about": "Acerca de",
@@ -428,7 +433,12 @@
         "transcription": "Transcripción"
       },
       "cacheLine": "Caché de prompts: {{reads}} tokens leídos de la caché y {{writes}} escritos en este periodo"
-    }
+    },
+    "storageQuota": "Cuota de almacenamiento (MB)",
+    "storageQuotaPlaceholder": "Sin límite",
+    "storageQuotaNewPlaceholder": "Valor predeterminado de la configuración del sistema",
+    "storageQuotaHelp": "Se rechazan las subidas que superarían la cuota. Las grabaciones sin audio no cuentan. Déjelo vacío para no poner límite.",
+    "storageUsedLabel": "Almacenamiento usado"
   },
   "apiTokens": {
     "activeTokens": "Tokens activos",
@@ -917,7 +927,8 @@
     "uploadFailedWithStatus": "La subida falló con el estado {{status}}",
     "uploadTimedOut": "Se agotó el tiempo de subida",
     "validationError": "Error de validación",
-    "waitAndRetryGuidance": "Espere unos minutos y vuelva a intentarlo"
+    "waitAndRetryGuidance": "Espere unos minutos y vuelva a intentarlo",
+    "shareTarget_storage_quota": "El archivo compartido no se guardó porque su almacenamiento está lleno."
   },
   "eventExtraction": {
     "description": "Cuando está habilitado, la IA identificará reuniones, citas y plazos mencionados en tus grabaciones y creará eventos de calendario descargables.",
@@ -1589,7 +1600,8 @@
     "dismiss": "Descartar",
     "empty": "No hay nada que requiera su atención.",
     "view": "Ver",
-    "voiceEmbeddingChanged": "El servicio de transcripción devuelve embeddings de voz de otro modelo. Los perfiles de voz se guardan por separado para cada modelo: los del modelo anterior no coincidirán con las grabaciones nuevas y vuelven si restaura el backend anterior, y los del modelo nuevo se aprenden a medida que nombra a los hablantes."
+    "voiceEmbeddingChanged": "El servicio de transcripción devuelve embeddings de voz de otro modelo. Los perfiles de voz se guardan por separado para cada modelo: los del modelo anterior no coincidirán con las grabaciones nuevas y vuelven si restaura el backend anterior, y los del modelo nuevo se aprenden a medida que nombra a los hablantes.",
+    "storageQuotaReached": "{{filename}} se dejó en la carpeta vigilada porque su almacenamiento está lleno ({{used_mb}} MB de {{quota_mb}} MB). Se añadirá cuando haya espacio."
   },
   "preferences": {
     "description": "Preferencias de visualización y comportamiento del editor. Estos ajustes se guardan en tu cuenta y se aplican en todos los dispositivos.",
@@ -2249,5 +2261,11 @@
     "secretBannerTitle": "Copie este secreto ahora — no se mostrará otra vez",
     "secretBannerHint": "Firme cada solicitud del receptor: HMAC-SHA256 del cuerpo crudo usando este secreto. Cabecera: Speakr-Signature: sha256=<hex>",
     "copy": "Copiar"
+  },
+  "storageQuota": {
+    "title": "Almacenamiento lleno",
+    "guidance": "Elimine grabaciones o quite su audio, o pida a un administrador una cuota mayor.",
+    "uploadRefused": "Este archivo no cabe en su almacenamiento: {{used}} de {{quota}} usados, y el archivo ocupa {{file}}.",
+    "recordingBlocked": "Su almacenamiento está lleno ({{used}} de {{quota}}). Elimine grabaciones o quite su audio antes de volver a grabar."
   }
 }

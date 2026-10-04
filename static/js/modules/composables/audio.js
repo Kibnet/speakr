@@ -540,7 +540,33 @@ export function useAudio(state, utils) {
     // existing server session after a page reload: a fresh MediaRecorder keeps
     // POSTing chunks to the same session id, and its header chunk starts a new
     // segment that the server-side assembly concatenates onto the prior audio.
+    // Storage quota (#413): a new recording starts only below the quota, and
+    // once started it is kept whatever its length. A failed check never
+    // blocks the recorder.
+    const hasStorageRoom = async () => {
+        try {
+            const response = await fetch('/api/account/storage', { credentials: 'same-origin' });
+            if (!response.ok) return true;
+            const usage = await response.json();
+            if (!usage.quota_bytes || usage.used_bytes < usage.quota_bytes) return true;
+            const message = (utils.t && utils.t('storageQuota.recordingBlocked', {
+                used: formatFileSize(usage.used_bytes), quota: formatFileSize(usage.quota_bytes),
+            })) || 'Your storage is full. Delete recordings or remove their audio before recording again.';
+            setGlobalError(message);
+            return false;
+        } catch (e) {
+            return true;
+        }
+    };
+
     const startRecordingInternal = async (mode, resumeContext = null) => {
+        if (!resumeContext && !(incognitoMode && incognitoMode.value) && !(await hasStorageRoom())) {
+            if (pendingDisplayStream) {
+                pendingDisplayStream.getTracks().forEach(track => track.stop());
+                pendingDisplayStream = null;
+            }
+            return;
+        }
         try {
             recordingMode.value = mode;
             recordingVideoActive.value = false;

@@ -14,6 +14,10 @@ Setting a character limit (like 50,000 characters) creates a ceiling on API cons
 
 The sweet spot depends on your use case. For typical meetings under an hour, 50,000 characters usually captures everything. For longer sessions, you might increase this limit or train users to split recordings. Monitor your API costs and user feedback to find the right balance.
 
+## Default Storage Quota
+
+**`default_storage_quota_mb`** (default 0, no limit) is the storage quota given to accounts created from now on, by an administrator, by registration or by SSO. Existing accounts keep their own quota, which is set per user in Edit User. See [Storage Quotas](user-management.md#storage-quotas).
+
 ## Maximum File Size
 
 Two separate caps apply depending on file type:

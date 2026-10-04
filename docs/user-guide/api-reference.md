@@ -322,7 +322,7 @@ The meeting date is chosen in this order: `meeting_date`, a date in the file nam
 
 `ignored` lists the tags and folder the upload dropped because you cannot use them.
 
-An upload that would go over the user's storage quota is refused with `507 Insufficient Storage`:
+An upload that would exceed the user's storage quota is refused with `507 Insufficient Storage`:
 
 ```json
 {
@@ -335,7 +335,7 @@ An upload that would go over the user's storage quota is refused with `507 Insuf
 }
 ```
 
-`GET /api/v1/users/me` reports the same figures under `storage`, and `/api/v1/capabilities` lists `storage_quota`.
+`GET /api/v1/users/me` includes the same figures under `storage`, and `/api/v1/capabilities` lists `storage_quota`.
 
 **Example:**
 

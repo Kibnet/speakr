@@ -170,7 +170,7 @@ The setting only appears when your administrator has configured email delivery a
 The Shared Transcripts tab, also opened from **Shared Transcripts** in the user menu, lists everything you have shared and everything shared with you, in three sections:
 
 - **Public links**: each recording with a public link, when you created it, whether it includes the summary and notes, and the link itself.
-- **People and groups**: each recording you have shared with other users, with each person's permissions (view, edit, share). Shares made through a group tag or group folder say so; they end when the tag or folder is removed from the recording, so they have no revoke button here.
+- **People and groups**: each recording you have shared with other users, with each person's permissions (view, edit, share). A share made through a group tag or group folder is marked as such. It lasts until the tag or folder is removed from the recording, so it has no revoke button here.
 - **Shared with me**: recordings other users have shared with you, with the owner, your permissions and a link to open each one.
 
 The last two sections appear when internal sharing is enabled. In the user menu dialog they are split into two tabs, **Shared by me** and **Shared with me**.
@@ -183,9 +183,9 @@ You can modify these settings anytime without generating new links. Toggle summa
 
 ### Revoking Access
 
-For a person, **Revoke** asks for a second click and then removes their access, together with any shares they passed on that have no other path to them.
+To remove a person's access, click **Revoke** and then **Confirm**. Any shares that person passed on are removed too, unless the recipients also have access through another share.
 
-For a public link, the delete button (trash icon) immediately revokes access. Once deleted, anyone trying to access that link sees an error message. This instant revocation provides security when you've accidentally shared with wrong parties or when access is no longer appropriate. Remember that deletion can't retrieve information already viewed or downloaded by recipients.
+For a public link, click the delete button (trash icon) to revoke access immediately. Once deleted, anyone trying to access that link sees an error message. This instant revocation provides security when you've accidentally shared with wrong parties or when access is no longer appropriate. Remember that deletion can't retrieve information already viewed or downloaded by recipients.
 
 ## Speakers Management Tab
 

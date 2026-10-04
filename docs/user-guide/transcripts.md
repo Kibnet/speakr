@@ -22,7 +22,7 @@ When you need to assign real names to speaker labels, click the speaker identifi
 
 The speaker identification modal shows each detected speaker with a sample of their dialogue to help you identify them. When you've identified speakers in previous recordings, Speakr's voice recognition system analyzes voice embeddings and provides intelligent suggestions with confidence scores. You can enter real names for each speaker, and these names will replace the generic labels throughout the transcription. The system remembers these assignments and builds voice profiles, making it easier and faster to identify the same speakers in subsequent recordings.
 
-**Identify from conversation** works differently: it asks the text model to find names mentioned in the conversation, for example when people introduce or address each other, and fills them in for you to review. By default it names only the speakers that are still unnamed; **Re-identify all from conversation** in its menu starts again for every speaker. It needs a text model and does not use voice profiles, so voice matches appear as suggestions whether or not you use it. Without a configured text model the button is disabled.
+**Identify from conversation** works differently: names mentioned in the conversation, for example when people introduce or address each other, are found with the text model and filled in for review. By default, only the speakers that are still unnamed are named; with **Re-identify all from conversation** in its menu, every speaker is identified again. A text model is required and voice profiles are not used, so voice matches appear as suggestions whether or not you use it. Without a configured text model the button is disabled.
 
 ### Managing Saved Speakers
 

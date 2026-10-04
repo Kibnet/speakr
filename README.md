@@ -227,8 +227,8 @@ Complete documentation is available at **[murtaza-nasir.github.io/speakr](https:
 
 - Storage quotas per user, with a default for new accounts, usage on the Account page and in the header (#413).
 - Shared Transcripts lists your public links, your shares with people and groups, and recordings shared with you (#416).
-- Right-to-left text follows its own direction (#414); speaker counts from `.env` reach WhisperX (#415).
-- A local language model works without an API key; merges can keep the originals without their audio.
+- Right-to-left text is shown in its own direction (#414), and speaker counts from `.env` are sent to WhisperX (#415).
+- A local language model can be used without an API key, and the originals of a merge can be kept without their audio.
 
 ### v0.10.12-alpha
 

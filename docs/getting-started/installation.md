@@ -192,7 +192,7 @@ The ASR_BASE_URL depends on your deployment architecture:
 - **Same Docker Compose stack:** Use the service name (e.g., `http://whisperx-asr:9000` or `http://whisper-asr:9000`) - Docker's internal networking
 - **Separate machine:** Use the full URL with IP address or domain name (e.g., `http://192.168.1.100:9000`)
 
-Speaker diarization is automatically enabled when using ASR endpoints. The system will identify different speakers in your recordings and label them as Speaker 1, Speaker 2, and so on. You can optionally override the default speaker detection settings by uncommenting and adjusting ASR_MIN_SPEAKERS and ASR_MAX_SPEAKERS in your environment file. These two values are the instance-wide default: a speaker count chosen at upload, or set on a tag or folder, takes precedence. When a tag sets only a minimum above ASR_MAX_SPEAKERS, the tag value is used for both.
+Speaker diarization is automatically enabled when using ASR endpoints. The system will identify different speakers in your recordings and label them as Speaker 1, Speaker 2, and so on. You can optionally override the default speaker detection settings by uncommenting and adjusting ASR_MIN_SPEAKERS and ASR_MAX_SPEAKERS in your environment file. These two values are the instance-wide default: a speaker count chosen at upload, or set on a tag or folder, takes precedence. When only a minimum is set on a tag and it is above ASR_MAX_SPEAKERS, the tag value is used for both.
 
 **Voice Profile Configuration:**
 

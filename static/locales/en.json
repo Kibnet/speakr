@@ -116,11 +116,10 @@
     "storageOfQuota": "{{used}} of {{quota}}",
     "storageNoLimit": "{{used}} used, no limit",
     "storageFull": "Your storage is full. Uploads and new recordings are refused until you delete recordings or remove their audio.",
-    "storageHelp": "Counts the audio and video you keep. Recordings with their audio removed do not count.",
     "usageAndLimits": "Usage and Limits",
     "aiTokensMonth": "AI tokens this month",
     "transcriptionMonth": "Transcription this month",
-    "usageHelp": "AI tokens and transcription minutes count from the start of each month. Storage counts the audio and video you keep; recordings with their audio removed do not count."
+    "usageHelp": "AI tokens and transcription minutes are counted from the start of each month. Storage includes the audio and video you keep, but not recordings with their audio removed."
   },
   "accountTabs": {
     "about": "About",
@@ -441,7 +440,7 @@
     "storageQuota": "Storage quota (MB)",
     "storageQuotaPlaceholder": "No limit",
     "storageQuotaNewPlaceholder": "Default from System Settings",
-    "storageQuotaHelp": "Uploads that would go over the quota are refused. Recordings with their audio removed do not count. Leave empty for no limit.",
+    "storageQuotaHelp": "Uploads that would exceed the quota are refused. Recordings with their audio removed do not count. Leave empty for no limit.",
     "storageUsedLabel": "Storage used"
   },
   "apiTokens": {
@@ -1302,8 +1301,8 @@
     "youHaveXSpeakers": "You have {{count}} speakers, but only 16 unique colors are available. Colors will repeat after the 16th speaker.",
     "createTagNamed": "Create tag \"{{name}}\"",
     "newTag": "New tag",
-    "autoIdentifyTooltip": "Reads names mentioned in the conversation. Voice matches appear as suggestions without this.",
-    "autoIdentifyNoModel": "Needs a text model, and none is configured. Voice matches appear as suggestions without it."
+    "autoIdentifyTooltip": "Names mentioned in the conversation are found with the text model. Voice matches are suggested without this.",
+    "autoIdentifyNoModel": "A text model is needed, and none is configured. Voice matches are suggested without it."
   },
   "incognito": {
     "audioNotStored": "Audio not stored in incognito mode",
@@ -1457,7 +1456,7 @@
     "originals_keep": "Keep the originals",
     "originals_keepHint": "The original recordings stay as they are.",
     "originals_remove_audio": "Keep the originals without their audio",
-    "originals_remove_audioHint": "The originals keep their transcripts, summaries and notes; their audio is removed once the merged recording is saved, which frees the space.",
+    "originals_remove_audioHint": "Their transcripts, summaries and notes are kept. Their audio is removed once the merged recording is saved, to free the space.",
     "originals_delete": "Delete the originals",
     "originals_deleteHint": "The original recordings are deleted once the merged recording is saved.",
     "storageNotice": "There is not enough storage to keep the originals with their audio. Keep them without their audio, or delete them."
@@ -1819,7 +1818,7 @@
     "revokeAccess": "Revoke access",
     "revoke": "Revoke",
     "confirmRevoke": "Confirm",
-    "groupShareNote": "Ends when the tag or folder is removed",
+    "groupShareNote": "Lasts until the tag or folder is removed",
     "nothingSharedWithMe": "Nothing has been shared with you yet.",
     "fromOwner": "From {{name}}",
     "open": "Open",

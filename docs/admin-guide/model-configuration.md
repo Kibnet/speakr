@@ -269,7 +269,7 @@ CHAT_MODEL_NAME=openai/gpt-4o
 | `CHAT_MODEL_BASE_URL` + `CHAT_MODEL_NAME` set | Uses a dedicated chat server; no key is sent unless `CHAT_MODEL_API_KEY` is set (suits a local server) |
 | All `CHAT_MODEL_*` variables set | Uses fully dedicated chat configuration |
 
-The text model's key is sent only to the text model's server. A chat model on another server uses `CHAT_MODEL_API_KEY`, or no key.
+The text model's key is sent only to the text model's server. For a chat model on another server, `CHAT_MODEL_API_KEY` is used, or no key.
 
 ### GPT-5 Settings for Chat
 

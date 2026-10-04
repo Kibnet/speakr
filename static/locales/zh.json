@@ -116,11 +116,10 @@
     "storageOfQuota": "{{used}} / {{quota}}",
     "storageNoLimit": "已用 {{used}}，不限制",
     "storageFull": "您的存储已满。在删除录音或删除其音频之前，上传和新录音都会被拒绝。",
-    "storageHelp": "计入您保留的音频和视频。已删除音频的录音不计入。",
     "usageAndLimits": "用量与限额",
     "aiTokensMonth": "本月 AI 令牌",
     "transcriptionMonth": "本月转录",
-    "usageHelp": "AI 令牌和转录分钟数从每月月初开始计算。存储计入您保留的音频和视频；已删除音频的录音不计入。"
+    "usageHelp": "AI 令牌和转录分钟数从每月月初开始计算。存储包括您保留的音频和视频，但不包括已删除音频的录音。"
   },
   "accountTabs": {
     "about": "关于",
@@ -1302,8 +1301,8 @@
     "youHaveXSpeakers": "您有 {{count}} 位发言人，但只有16种独特的颜色可用。颜色将在第16位发言人之后重复。",
     "createTagNamed": "创建标签\"{{name}}\"",
     "newTag": "新建标签",
-    "autoIdentifyTooltip": "读取对话中提到的名字。声纹匹配无需此功能也会显示为建议。",
-    "autoIdentifyNoModel": "需要文本模型，但尚未配置。声纹匹配无需它也会显示为建议。"
+    "autoIdentifyTooltip": "使用文本模型查找对话中提到的名字。声纹匹配无需此功能也会被建议。",
+    "autoIdentifyNoModel": "需要文本模型，但尚未配置。声纹匹配无需它也会被建议。"
   },
   "incognito": {
     "audioNotStored": "隐身模式下不会保存音频",
@@ -1457,7 +1456,7 @@
     "originals_keep": "保留原录音",
     "originals_keepHint": "原录音保持不变。",
     "originals_remove_audio": "保留原录音但删除其音频",
-    "originals_remove_audioHint": "原录音保留转录、摘要和笔记；合并录音保存后删除其音频，从而释放空间。",
+    "originals_remove_audioHint": "转录、摘要和笔记会保留。合并录音保存后删除其音频，以释放空间。",
     "originals_delete": "删除原录音",
     "originals_deleteHint": "合并录音保存后删除原录音。",
     "storageNotice": "存储空间不足，无法连同音频保留原录音。请保留但删除其音频，或删除原录音。"
@@ -1819,7 +1818,7 @@
     "revokeAccess": "撤销访问",
     "revoke": "撤销",
     "confirmRevoke": "确认",
-    "groupShareNote": "移除标签或文件夹后结束",
+    "groupShareNote": "在移除标签或文件夹之前一直有效",
     "nothingSharedWithMe": "还没有人与您分享内容。",
     "fromOwner": "来自 {{name}}",
     "open": "打开",

@@ -116,11 +116,10 @@
     "storageOfQuota": "{{used}} de {{quota}}",
     "storageNoLimit": "{{used}} usados, sem limite",
     "storageFull": "Seu armazenamento está cheio. Envios e novas gravações são recusados até você excluir gravações ou remover o áudio delas.",
-    "storageHelp": "Conta o áudio e o vídeo que você mantém. Gravações com o áudio removido não contam.",
     "usageAndLimits": "Uso e limites",
     "aiTokensMonth": "Tokens de IA neste mês",
     "transcriptionMonth": "Transcrição neste mês",
-    "usageHelp": "Tokens de IA e minutos de transcrição contam a partir do início de cada mês. O armazenamento conta o áudio e o vídeo que você mantém; gravações com o áudio removido não contam."
+    "usageHelp": "Tokens de IA e minutos de transcrição são contados a partir do início de cada mês. O armazenamento inclui o áudio e o vídeo que você mantém, mas não as gravações com o áudio removido."
   },
   "accountTabs": {
     "about": "Sobre",
@@ -1302,8 +1301,8 @@
     "youHaveXSpeakers": "Você tem {{count}} oradores, mas apenas 16 cores únicas estão disponíveis. As cores se repetirão após o 16º orador.",
     "createTagNamed": "Criar tag \"{{name}}\"",
     "newTag": "Nova tag",
-    "autoIdentifyTooltip": "Lê os nomes mencionados na conversa. As correspondências de voz aparecem como sugestões sem isso.",
-    "autoIdentifyNoModel": "Precisa de um modelo de texto, e nenhum está configurado. As correspondências de voz aparecem como sugestões sem ele."
+    "autoIdentifyTooltip": "Os nomes mencionados na conversa são encontrados com o modelo de texto. As correspondências de voz são sugeridas sem isso.",
+    "autoIdentifyNoModel": "É necessário um modelo de texto, e nenhum está configurado. As correspondências de voz são sugeridas sem ele."
   },
   "incognito": {
     "audioNotStored": "Áudio não armazenado em modo incógnito",
@@ -1457,7 +1456,7 @@
     "originals_keep": "Manter os originais",
     "originals_keepHint": "As gravações originais ficam como estão.",
     "originals_remove_audio": "Manter os originais sem o áudio",
-    "originals_remove_audioHint": "Os originais mantêm transcrição, resumo e notas; o áudio deles é removido quando a gravação mesclada é salva, o que libera espaço.",
+    "originals_remove_audioHint": "Transcrição, resumo e notas são mantidos. O áudio é removido quando a gravação mesclada é salva, para liberar espaço.",
     "originals_delete": "Excluir os originais",
     "originals_deleteHint": "As gravações originais são excluídas quando a gravação mesclada é salva.",
     "storageNotice": "Não há armazenamento suficiente para manter os originais com o áudio. Mantenha-os sem o áudio ou exclua-os."
@@ -1819,7 +1818,7 @@
     "revokeAccess": "Revogar acesso",
     "revoke": "Revogar",
     "confirmRevoke": "Confirmar",
-    "groupShareNote": "Termina quando a tag ou a pasta é removida",
+    "groupShareNote": "Vale até a tag ou a pasta ser removida",
     "nothingSharedWithMe": "Nada foi compartilhado com você ainda.",
     "fromOwner": "De {{name}}",
     "open": "Abrir",

@@ -116,11 +116,10 @@
     "storageOfQuota": "{{used}} de {{quota}}",
     "storageNoLimit": "{{used}} usados, sin límite",
     "storageFull": "Su almacenamiento está lleno. Las subidas y las grabaciones nuevas se rechazan hasta que elimine grabaciones o quite su audio.",
-    "storageHelp": "Cuenta el audio y el vídeo que conserva. Las grabaciones sin audio no cuentan.",
     "usageAndLimits": "Uso y límites",
     "aiTokensMonth": "Tokens de IA este mes",
     "transcriptionMonth": "Transcripción este mes",
-    "usageHelp": "Los tokens de IA y los minutos de transcripción cuentan desde el inicio de cada mes. El almacenamiento cuenta el audio y el vídeo que conserva; las grabaciones sin audio no cuentan."
+    "usageHelp": "Los tokens de IA y los minutos de transcripción se cuentan desde el inicio de cada mes. El almacenamiento incluye el audio y el vídeo que conserva, pero no las grabaciones sin audio."
   },
   "accountTabs": {
     "about": "Acerca de",
@@ -1302,8 +1301,8 @@
     "youHaveXSpeakers": "Tiene {{count}} oradores, pero solo hay 16 colores únicos disponibles. Los colores se repetirán después del decimosexto orador.",
     "createTagNamed": "Crear etiqueta \"{{name}}\"",
     "newTag": "Nueva etiqueta",
-    "autoIdentifyTooltip": "Lee los nombres mencionados en la conversación. Las coincidencias de voz aparecen como sugerencias sin esto.",
-    "autoIdentifyNoModel": "Necesita un modelo de texto, y no hay ninguno configurado. Las coincidencias de voz aparecen como sugerencias sin él."
+    "autoIdentifyTooltip": "Los nombres mencionados en la conversación se buscan con el modelo de texto. Las coincidencias de voz se sugieren sin esto.",
+    "autoIdentifyNoModel": "Se necesita un modelo de texto y no hay ninguno configurado. Las coincidencias de voz se sugieren sin él."
   },
   "incognito": {
     "audioNotStored": "El audio no se almacena en modo incógnito",
@@ -1457,7 +1456,7 @@
     "originals_keep": "Conservar los originales",
     "originals_keepHint": "Las grabaciones originales quedan como están.",
     "originals_remove_audio": "Conservar los originales sin su audio",
-    "originals_remove_audioHint": "Los originales conservan su transcripción, resumen y notas; su audio se elimina cuando se guarda la grabación combinada, lo que libera espacio.",
+    "originals_remove_audioHint": "Se conservan su transcripción, resumen y notas. Su audio se elimina cuando se guarda la grabación combinada, para liberar espacio.",
     "originals_delete": "Eliminar los originales",
     "originals_deleteHint": "Las grabaciones originales se eliminan cuando se guarda la grabación combinada.",
     "storageNotice": "No hay almacenamiento suficiente para conservar los originales con su audio. Consérvelos sin audio o elimínelos."
@@ -1819,7 +1818,7 @@
     "revokeAccess": "Retirar acceso",
     "revoke": "Retirar",
     "confirmRevoke": "Confirmar",
-    "groupShareNote": "Termina al quitar la etiqueta o la carpeta",
+    "groupShareNote": "Dura hasta que se quita la etiqueta o la carpeta",
     "nothingSharedWithMe": "Todavía no se ha compartido nada con usted.",
     "fromOwner": "De {{name}}",
     "open": "Abrir",

@@ -116,11 +116,10 @@
     "storageOfQuota": "{{used}} von {{quota}}",
     "storageNoLimit": "{{used}} belegt, keine Begrenzung",
     "storageFull": "Ihr Speicher ist voll. Uploads und neue Aufnahmen werden abgelehnt, bis Sie Aufnahmen löschen oder deren Audio entfernen.",
-    "storageHelp": "Zählt das Audio und Video, das Sie behalten. Aufnahmen mit entferntem Audio zählen nicht.",
     "usageAndLimits": "Nutzung und Limits",
     "aiTokensMonth": "KI-Tokens diesen Monat",
     "transcriptionMonth": "Transkription diesen Monat",
-    "usageHelp": "KI-Tokens und Transkriptionsminuten zählen ab Monatsbeginn. Der Speicher zählt das Audio und Video, das Sie behalten; Aufnahmen mit entferntem Audio zählen nicht."
+    "usageHelp": "KI-Tokens und Transkriptionsminuten werden ab Monatsbeginn gezählt. Der Speicher umfasst das Audio und Video, das Sie behalten, aber keine Aufnahmen mit entferntem Audio."
   },
   "accountTabs": {
     "about": "Über",
@@ -1302,8 +1301,8 @@
     "youHaveXSpeakers": "Sie haben {{count}} Sprecher, aber nur 16 eindeutige Farben sind verfügbar. Die Farben wiederholen sich nach dem 16. Sprecher.",
     "createTagNamed": "Tag \"{{name}}\" erstellen",
     "newTag": "Neues Tag",
-    "autoIdentifyTooltip": "Liest im Gespräch genannte Namen. Stimmtreffer erscheinen auch ohne dies als Vorschläge.",
-    "autoIdentifyNoModel": "Benötigt ein Textmodell, und keines ist eingerichtet. Stimmtreffer erscheinen auch ohne als Vorschläge."
+    "autoIdentifyTooltip": "Im Gespräch genannte Namen werden mit dem Textmodell gefunden. Stimmtreffer werden auch ohne dies vorgeschlagen.",
+    "autoIdentifyNoModel": "Ein Textmodell wird benötigt, und keines ist eingerichtet. Stimmtreffer werden auch ohne vorgeschlagen."
   },
   "incognito": {
     "audioNotStored": "Audio wird im Inkognito-Modus nicht gespeichert",
@@ -1457,7 +1456,7 @@
     "originals_keep": "Originale behalten",
     "originals_keepHint": "Die ursprünglichen Aufnahmen bleiben unverändert.",
     "originals_remove_audio": "Originale ohne Audio behalten",
-    "originals_remove_audioHint": "Die Originale behalten Transkript, Zusammenfassung und Notizen; ihr Audio wird entfernt, sobald die zusammengeführte Aufnahme gespeichert ist, und gibt so Speicher frei.",
+    "originals_remove_audioHint": "Transkripte, Zusammenfassungen und Notizen bleiben erhalten. Das Audio wird entfernt, sobald die zusammengeführte Aufnahme gespeichert ist, um Speicher freizugeben.",
     "originals_delete": "Originale löschen",
     "originals_deleteHint": "Die ursprünglichen Aufnahmen werden gelöscht, sobald die zusammengeführte Aufnahme gespeichert ist.",
     "storageNotice": "Der Speicher reicht nicht, um die Originale mit Audio zu behalten. Behalten Sie sie ohne Audio oder löschen Sie sie."
@@ -1819,7 +1818,7 @@
     "revokeAccess": "Zugriff entziehen",
     "revoke": "Entziehen",
     "confirmRevoke": "Bestätigen",
-    "groupShareNote": "Endet, wenn Tag oder Ordner entfernt wird",
+    "groupShareNote": "Gilt, bis Tag oder Ordner entfernt wird",
     "nothingSharedWithMe": "Mit Ihnen wurde noch nichts geteilt.",
     "fromOwner": "Von {{name}}",
     "open": "Öffnen",

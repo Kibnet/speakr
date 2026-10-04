@@ -68,14 +68,14 @@ Limit how much audio and video each user keeps on the server. Set **Storage quot
 
 **When the quota is reached**:
 
-- **Uploads** from the browser, the API, the share target, the ASR Voice Recorder app and sliced uploads are refused when the file would go over the quota. The user sees how much is used and how large the file is. The API answers `507` with the code `storage_quota_exceeded`.
-- **Recordings made in the app** cannot start once the quota is reached. A recording already in progress is always kept, even if it goes over the quota.
-- **The watch folder** leaves a file that does not fit where it is and tells the user once, in their notifications. The file is added on a later scan once there is room.
-- **Merging** recordings that keeps the originals needs room for the merged copy; a merge that deletes the originals is always allowed.
+- **Uploads** from the browser, the API, the share target, the ASR Voice Recorder app and sliced uploads are refused when the file would exceed the quota. The user sees how much is used and how large the file is. The API response is `507` with the code `storage_quota_exceeded`.
+- **Recordings made in the app** cannot be started once the quota is reached. A recording already in progress is always kept, even if the quota is exceeded.
+- **The watch folder**: a file that does not fit is left in place, and the user is told once, in their notifications. The file is added on a later scan once there is room.
+- **Merging**: to keep the originals with their audio, there must be room for the merged copy. A merge in which the originals are deleted, or kept without their audio, is always allowed.
 
-Users see their storage, and the quota when there is one, under **Account → Account Statistics**. They free space by deleting recordings or by removing their audio.
+Users see their storage, and the quota when there is one, under **Account → Usage and Limits** and in the header. They free space by deleting recordings or by removing their audio.
 
-**Default for new accounts**: the System Setting `default_storage_quota_mb` gives every account created afterwards a quota (0 means no limit). It applies to accounts created by an administrator, by registration and by SSO; existing accounts keep their own quota.
+**Default for new accounts**: with the System Setting `default_storage_quota_mb`, every account created afterwards is given a quota (0 means no limit). This default is used for accounts created by an administrator, by registration and by SSO; the quota of an existing account does not change.
 
 ## Managing Existing Users
 

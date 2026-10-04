@@ -32,6 +32,8 @@ TEXT_MODEL_NAME=openai/gpt-4o-mini
 
 **Custom Endpoints**: Speakr works with any OpenAI-compatible API endpoint, including self-hosted solutions like LocalAI, Ollama with OpenAI compatibility, or enterprise API gateways.
 
+**Local servers without a key**: `TEXT_MODEL_API_KEY` is optional. Leave it unset for a server that needs no key, such as Ollama, vLLM or llama.cpp on your own network; set only `TEXT_MODEL_BASE_URL` and `TEXT_MODEL_NAME`.
+
 **Google Gemini (OpenAI-compatible)**: Google exposes Gemini models behind an OpenAI-compatible URL. Point Speakr at it like any other base URL:
 
 ```bash
@@ -261,10 +263,13 @@ CHAT_MODEL_NAME=openai/gpt-4o
 | Configuration | Behavior |
 |--------------|----------|
 | No `CHAT_MODEL_*` variables set | Chat uses `TEXT_MODEL_*` settings (default) |
-| Only `CHAT_MODEL_NAME` set | Falls back to `TEXT_MODEL_*` (API key required) |
+| Only `CHAT_MODEL_NAME` set | Falls back to `TEXT_MODEL_*` (a key or a base URL is required) |
 | Only `CHAT_MODEL_API_KEY` set | Falls back to `TEXT_MODEL_*` (model name required) |
 | `CHAT_MODEL_API_KEY` + `CHAT_MODEL_NAME` set | Uses chat config with `TEXT_MODEL_BASE_URL` |
+| `CHAT_MODEL_BASE_URL` + `CHAT_MODEL_NAME` set | Uses a dedicated chat server; no key is sent unless `CHAT_MODEL_API_KEY` is set (suits a local server) |
 | All `CHAT_MODEL_*` variables set | Uses fully dedicated chat configuration |
+
+The text model's key is sent only to the text model's server. A chat model on another server uses `CHAT_MODEL_API_KEY`, or no key.
 
 ### GPT-5 Settings for Chat
 

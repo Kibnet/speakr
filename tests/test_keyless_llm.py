@@ -1,5 +1,9 @@
 """Language models without an API key (#403).
 
+With neither a key nor an explicit server address, no model is configured:
+no client is created, so nothing (no transcript) is sent to the default
+hosted address, and model steps report that no model is configured.
+
 A local server (Ollama, vLLM, llama.cpp) often runs without a key. Every
 model call refused to run when TEXT_MODEL_API_KEY was empty, although the
 client was built with a placeholder for exactly this case, and the chat
@@ -74,3 +78,38 @@ def test_a_chat_model_with_its_own_key(env):
 def test_a_chat_name_alone_keeps_the_text_model(env):
     env(text_key="sk-text", chat_name="chat-model")
     assert llm.get_chat_config()["model_name"] == "text-model"
+
+
+_PROBE = (
+    "import json, src.services.llm as l; "
+    "print(json.dumps([l.TEXT_MODEL_CONFIGURED, l.client is not None, l.chat_client is not None]))"
+)
+
+
+def _clients(**env):
+    import json
+    import subprocess
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    clean = {k: v for k, v in os.environ.items()
+             if not k.startswith(("TEXT_MODEL_", "CHAT_MODEL_"))}
+    clean.update(env)
+    out = subprocess.run([sys.executable, "-c", _PROBE], cwd=root, env=clean,
+                         capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0, out.stderr[-2000:]
+    return json.loads(out.stdout.strip().splitlines()[-1])
+
+
+@pytest.mark.parametrize("env,expected", [
+    ({}, [False, False, False]),                                              # nothing set: nothing is sent
+    ({"TEXT_MODEL_BASE_URL": "http://llm.lan/v1"}, [True, True, True]),       # local server, no key
+    ({"TEXT_MODEL_API_KEY": "sk-x"}, [True, True, True]),                     # hosted default with a key
+    ({"CHAT_MODEL_NAME": "c", "CHAT_MODEL_BASE_URL": "http://chat.lan/v1"}, [False, False, True]),
+])
+def test_a_model_is_configured_only_when_set(env, expected):
+    assert _clients(**env) == expected
+
+
+def test_without_a_model_the_call_says_so(monkeypatch):
+    monkeypatch.setattr(llm, "client", None)
+    with pytest.raises(ValueError, match="No text model is configured"):
+        llm.call_llm_completion([{"role": "user", "content": "hi"}])

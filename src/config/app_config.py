@@ -155,8 +155,10 @@ def initialize_config(app):
 
     client = None
     try:
+        from src.services.llm import llm_timeout, LLM_MAX_RETRIES, TEXT_MODEL_CONFIGURED
+        if not TEXT_MODEL_CONFIGURED:
+            raise RuntimeError("no text model configured (set TEXT_MODEL_BASE_URL, and TEXT_MODEL_API_KEY for a hosted service)")
         api_key = TEXT_MODEL_API_KEY or "not-needed"
-        from src.services.llm import llm_timeout, LLM_MAX_RETRIES
         client = OpenAI(api_key=api_key, base_url=TEXT_MODEL_BASE_URL, http_client=http_client_no_proxy, timeout=llm_timeout, max_retries=LLM_MAX_RETRIES)
         app.logger.info(f"LLM client initialized: {TEXT_MODEL_BASE_URL} / {TEXT_MODEL_NAME}")
     except Exception as e:

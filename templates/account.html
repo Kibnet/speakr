@@ -4093,16 +4093,70 @@ curl "https://your-speakr-instance.com/api/recordings?token=YOUR_TOKEN_HERE"</co
             async function loadShares() {
                 sharesContainer.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
                 try {
-                    const response = await fetch('/api/shares');
-                    const shares = await response.json();
-                    if (!response.ok) throw new Error(shares.error || 'Failed to load');
-                    
-                    if (shares.length === 0) {
-                        sharesContainer.innerHTML = `<p class="text-center text-[var(--text-muted)]">${t('sharedTranscriptsPage.noSharedTranscripts')}</p>`;
-                        return;
-                    }
+                    // Public links, recordings shared with people and groups,
+                    // and recordings shared with this user (#416).
+                    const response = await fetch('/api/shares/overview');
+                    const overview = await response.json();
+                    if (!response.ok) throw new Error(overview.error || 'Failed to load');
+                    const shares = overview.public_links || [];
 
                     sharesContainer.innerHTML = '';
+                    const section = (icon, title) => {
+                        const el = document.createElement('section');
+                        el.className = 'space-y-3';
+                        el.innerHTML = `<h3 class="text-lg font-medium text-[var(--text-secondary)] flex items-center gap-2"><i class="fas ${icon}"></i>${escapeHtml(title)}</h3>`;
+                        sharesContainer.appendChild(el);
+                        return el;
+                    };
+                    const empty = (el, text) => {
+                        const p = document.createElement('p');
+                        p.className = 'text-sm text-[var(--text-muted)]';
+                        p.textContent = text;
+                        el.appendChild(p);
+                    };
+                    const permissions = (item) => (item.can_edit ? t('sharedTranscripts.canEdit') : t('sharedTranscripts.canView'))
+                        + (item.can_reshare ? ' · ' + t('sharedTranscripts.canReshare') : '')
+                        + (item.source && item.source.type !== 'manual'
+                            ? ' · ' + t(item.source.type === 'group_tag' ? 'sharedTranscripts.viaGroupTag' : 'sharedTranscripts.viaGroupFolder', { name: item.source.name || '' })
+                            : '');
+
+                    const publicSection = section('fa-link', t('sharedTranscripts.publicLinks'));
+                    if (shares.length === 0) empty(publicSection, t('sharedTranscripts.noPublicLinks'));
+
+                    if (overview.internal_sharing_enabled) {
+                        const peopleSection = section('fa-user-friends', t('sharedTranscripts.peopleAndGroups'));
+                        if (!(overview.shared_by_me || []).length) empty(peopleSection, t('sharedTranscripts.noInternalShares'));
+                        (overview.shared_by_me || []).forEach(entry => {
+                            const card = document.createElement('div');
+                            card.className = 'bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)]';
+                            card.innerHTML = `<a href="/recordings/${entry.recording_id}" dir="auto" class="font-semibold hover:underline">${escapeHtml(entry.recording_title)}</a>
+                                <ul class="mt-2 divide-y divide-[var(--border-primary)]">${entry.recipients.map(p => `
+                                    <li class="py-2 flex items-center justify-between gap-3">
+                                        <div class="min-w-0"><p class="text-sm font-medium">${escapeHtml(p.username || '')}</p>
+                                        <p class="text-xs text-[var(--text-muted)]">${escapeHtml(permissions(p))}</p></div>
+                                        ${p.revocable
+                                            ? `<button data-internal-share-id="${p.share_id}" class="revoke-internal-btn text-sm px-2 py-1 rounded border border-[var(--border-secondary)] hover:bg-[var(--bg-secondary)]"><i class="fas fa-user-times mr-1"></i>${escapeHtml(t('sharedTranscripts.revoke'))}</button>`
+                                            : `<span class="text-xs text-[var(--text-muted)] text-right max-w-[12rem]">${escapeHtml(t('sharedTranscripts.groupShareNote'))}</span>`}
+                                    </li>`).join('')}</ul>`;
+                            peopleSection.appendChild(card);
+                        });
+
+                        const withMeSection = section('fa-inbox', t('sharedTranscripts.sharedWithMe'));
+                        if (!(overview.shared_with_me || []).length) empty(withMeSection, t('sharedTranscripts.nothingSharedWithMe'));
+                        (overview.shared_with_me || []).forEach(item => {
+                            const row = document.createElement('div');
+                            row.className = 'bg-[var(--bg-tertiary)] p-3 rounded-lg border border-[var(--border-primary)] flex items-center justify-between gap-3';
+                            const from = item.owner_username ? t('sharedTranscripts.fromOwner', { name: item.owner_username }) + ' · ' : '';
+                            row.innerHTML = `<div class="min-w-0"><a href="/recordings/${item.recording_id}" dir="auto" class="font-semibold hover:underline">${escapeHtml(item.recording_title)}</a>
+                                <p class="text-xs text-[var(--text-muted)]">${escapeHtml(from + permissions(item))} · ${formatInstant(item.created_at)}</p></div>`;
+                            withMeSection.appendChild(row);
+                        });
+                    }
+
+                    document.querySelectorAll('.revoke-internal-btn').forEach(btn => {
+                        btn.addEventListener('click', handleRevokeInternalShare);
+                    });
+
                     shares.forEach(share => {
                         const shareEl = document.createElement('div');
                         shareEl.className = 'bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)]';
@@ -4131,7 +4185,7 @@ curl "https://your-speakr-instance.com/api/recordings?token=YOUR_TOKEN_HERE"</co
                                 </button>
                             </div>
                         `;
-                        sharesContainer.appendChild(shareEl);
+                        publicSection.appendChild(shareEl);
                     });
 
                     document.querySelectorAll('.delete-share-btn').forEach(btn => {
@@ -4169,6 +4223,28 @@ curl "https://your-speakr-instance.com/api/recordings?token=YOUR_TOKEN_HERE"</co
 
                 } catch (error) {
                     sharesContainer.innerHTML = `<p class="text-center text-[var(--text-danger)]">${t('errors.loadingShares')}: ${error.message}</p>`;
+                }
+            }
+
+            // First click asks, second revokes (#416).
+            async function handleRevokeInternalShare(event) {
+                const button = event.currentTarget;
+                if (!button.dataset.confirming) {
+                    button.dataset.confirming = '1';
+                    button.innerHTML = `<i class="fas fa-user-times mr-1"></i>${escapeHtml(t('sharedTranscripts.confirmRevoke'))}`;
+                    button.classList.add('text-[var(--text-danger)]');
+                    return;
+                }
+                try {
+                    const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+                    const response = await fetch(`/api/internal-shares/${button.dataset.internalShareId}`, {
+                        method: 'DELETE',
+                        headers: csrfToken ? { 'X-CSRFToken': csrfToken } : {},
+                    });
+                    if (!response.ok) throw new Error('Failed to revoke');
+                    loadShares();
+                } catch (error) {
+                    alert(t('sharedTranscripts.revokeFailed'));
                 }
             }
 

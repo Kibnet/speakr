@@ -140,25 +140,12 @@ function useSharesModal() {
     const userShares = Vue.ref([]);
     const isLoadingShares = Vue.ref(false);
     
-    const openSharesList = async () => {
-        isLoadingShares.value = true;
-        showSharesListModal.value = true;
-        try {
-            const response = await fetch('/api/shares');
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to load shared items');
-            userShares.value = data;
-        } catch (error) {
-            if (window.setGlobalError) {
-                window.setGlobalError(`Failed to load shared items: ${error.message}`);
-            } else {
-                console.error('Failed to load shared items:', error);
-            }
-        } finally {
-            isLoadingShares.value = false;
-        }
+    // The Shared Transcripts dialog lives in the main app (#416), as on the
+    // other pages that use the shared header.
+    const openSharesList = () => {
+        window.location.href = "/?open=shares";
     };
-    
+
     const closeSharesList = () => {
         showSharesListModal.value = false;
     };

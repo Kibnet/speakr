@@ -1798,7 +1798,27 @@
     "noSharedTranscripts": "您尚未分享任何转录。",
     "shareNotes": "分享笔记",
     "shareSummary": "分享摘要",
-    "sharedOn": "分享于"
+    "sharedOn": "分享于",
+    "sharedByMe": "我分享的",
+    "sharedWithMe": "分享给我的",
+    "publicLinks": "公开链接",
+    "noPublicLinks": "您没有公开链接。",
+    "peopleAndGroups": "人员和群组",
+    "noInternalShares": "您尚未与其他用户分享录音。",
+    "canEdit": "可编辑",
+    "canView": "可查看",
+    "canReshare": "可转发分享",
+    "viaGroupTag": "通过群组标签 {{name}}",
+    "viaGroupFolder": "通过群组文件夹 {{name}}",
+    "revokeAccess": "撤销访问",
+    "revoke": "撤销",
+    "confirmRevoke": "确认",
+    "groupShareNote": "移除标签或文件夹后结束",
+    "nothingSharedWithMe": "还没有人与您分享内容。",
+    "fromOwner": "来自 {{name}}",
+    "open": "打开",
+    "accessRevoked": "已撤销访问",
+    "revokeFailed": "无法撤销访问。"
   },
   "sharedTranscriptsPage": {
     "noSharedTranscripts": "您尚未分享任何转录。"

@@ -15,7 +15,7 @@ from flask_login import login_required, current_user
 from werkzeug.exceptions import HTTPException
 
 from src.database import db
-from src.models import Recording, Share, InternalShare, SharedRecordingState, User, TranscriptChunk, ShareAuditLog
+from src.models import Recording, Share, InternalShare, SharedRecordingState, User, TranscriptChunk, ShareAuditLog, Folder
 from src.utils import md_to_html
 from src.services.storage import get_storage_service
 from src.services.public_shares import active_share_or_404
@@ -263,6 +263,79 @@ def get_shares():
     """Get all public shares for the current user."""
     shares = Share.query.filter_by(user_id=current_user.id).order_by(Share.created_at.desc()).all()
     return jsonify([share.to_dict() for share in shares])
+
+
+@shares_bp.route('/api/shares/overview', methods=['GET'])
+@login_required
+def get_shares_overview():
+    """Everything the Shared Transcripts list shows (#416).
+
+    The list predates internal sharing and showed public links only. It now
+    has what the user shared (public links, and recordings shared with people
+    and groups) and what was shared with them.
+    """
+    def _source(share):
+        if share.source_type == 'group_tag' and share.source_tag is not None:
+            return {'type': 'group_tag', 'name': share.source_tag.name}
+        if share.source_type == 'group_folder' and share.source_folder_id:
+            folder = db.session.get(Folder, share.source_folder_id)
+            return {'type': 'group_folder', 'name': folder.name if folder else None}
+        return {'type': 'manual', 'name': None}
+
+    public_links = [s.to_dict() for s in
+                    Share.query.filter_by(user_id=current_user.id).order_by(Share.created_at.desc()).all()]
+    shared_by_me, shared_with_me = [], []
+    if ENABLE_INTERNAL_SHARING:
+        by_recording = {}
+        for share in (InternalShare.query.filter_by(owner_id=current_user.id)
+                      .order_by(InternalShare.created_at.desc()).all()):
+            recording = share.recording
+            if recording is None:
+                continue
+            entry = by_recording.setdefault(recording.id, {
+                'recording_id': recording.id,
+                'recording_title': recording.title or recording.original_filename or f'#{recording.id}',
+                'recipients': [],
+            })
+            source = _source(share)
+            entry['recipients'].append({
+                'share_id': share.id,
+                'user_id': share.shared_with_user_id,
+                'username': share.shared_with.username if share.shared_with else None,
+                'can_edit': bool(share.can_edit),
+                'can_reshare': bool(share.can_reshare),
+                'source': source,
+                # A group share follows its tag or folder; removing the tag or
+                # folder ends it, so only a manual share is revoked here.
+                'revocable': source['type'] == 'manual',
+                'created_at': share.created_at.isoformat() if share.created_at else None,
+            })
+        shared_by_me = list(by_recording.values())
+
+        for share in (InternalShare.query.filter_by(shared_with_user_id=current_user.id)
+                      .order_by(InternalShare.created_at.desc()).all()):
+            recording = share.recording
+            if recording is None:
+                continue
+            shared_with_me.append({
+                'share_id': share.id,
+                'recording_id': recording.id,
+                'recording_title': recording.title or recording.original_filename or f'#{recording.id}',
+                'owner_username': share.owner.username if SHOW_USERNAMES_IN_UI and share.owner else None,
+                'can_edit': bool(share.can_edit),
+                'can_reshare': bool(share.can_reshare),
+                'source': _source(share),
+                'status': recording.status,
+                'created_at': share.created_at.isoformat() if share.created_at else None,
+            })
+
+    return jsonify({
+        'public_sharing_enabled': ENABLE_PUBLIC_SHARING,
+        'internal_sharing_enabled': ENABLE_INTERNAL_SHARING,
+        'public_links': public_links,
+        'shared_by_me': shared_by_me,
+        'shared_with_me': shared_with_me,
+    })
 
 
 @shares_bp.route('/api/share/<int:share_id>', methods=['PUT'])

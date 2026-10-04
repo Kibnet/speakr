@@ -2295,5 +2295,9 @@
     "guidance": "Delete recordings or remove their audio, or ask an administrator for a larger quota.",
     "uploadRefused": "This file does not fit in your storage: {{used}} of {{quota}} used, and the file is {{file}}.",
     "recordingBlocked": "Your storage is full ({{used}} of {{quota}}). Delete recordings or remove their audio before recording again."
+  },
+  "usageMeters": {
+    "tokenTooltip": "AI tokens this month: {{used}} of {{budget}}",
+    "storageTooltip": "Storage: {{used}} of {{quota}}"
   }
 }

@@ -2295,5 +2295,9 @@
     "guidance": "Supprimez des enregistrements ou leur audio, ou demandez un quota plus grand à un administrateur.",
     "uploadRefused": "Ce fichier ne tient pas dans votre stockage : {{used}} sur {{quota}} utilisés, et le fichier fait {{file}}.",
     "recordingBlocked": "Votre stockage est plein ({{used}} sur {{quota}}). Supprimez des enregistrements ou leur audio avant d'enregistrer à nouveau."
+  },
+  "usageMeters": {
+    "tokenTooltip": "Tokens IA ce mois-ci : {{used}} sur {{budget}}",
+    "storageTooltip": "Stockage : {{used}} sur {{quota}}"
   }
 }

@@ -635,7 +635,7 @@
                                 {% set pct = row.percentage %}
                                 <div>
                                     <div class="flex items-baseline justify-between gap-3 text-sm">
-                                        <span class="font-medium text-[var(--text-secondary)]"><i class="fas {{ row.icon }} mr-1.5 text-[var(--text-muted)]"></i><span data-i18n="{{ row.label_key }}">{{ row.key }}</span></span>
+                                        <span class="font-medium text-[var(--text-secondary)]"><i class="fas {{ row.icon }} mr-1.5 text-[var(--text-muted)]"></i>{% if row.key == 'tokens' %}<span data-i18n="account.aiTokensMonth">AI tokens this month</span>{% elif row.key == 'transcription' %}<span data-i18n="account.transcriptionMonth">Transcription this month</span>{% else %}<span data-i18n="account.storage">Storage</span>{% endif %}</span>
                                         {% if row.limit %}
                                         <span class="text-[var(--text-primary)] tabular-nums whitespace-nowrap" data-i18n="account.storageOfQuota" data-i18n-params='{"used": "{{ row.used }}", "quota": "{{ row.limit }}"}'>{{ row.used }} of {{ row.limit }}</span>
                                         {% else %}

@@ -27,6 +27,18 @@ def wait_ready(cache, result, path, principal=1, recording=9):
     pytest.fail('preparation did not finish')
 
 
+def wait_worker_ack(cache, identifier):
+    # Public ready can precede the worker's finally block. Inactive-TTL tests
+    # must wait for that acknowledgement before advancing the cached timestamp.
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        with cache._state() as state:
+            if not state['jobs'][identifier]['worker_active']:
+                return
+        time.sleep(.01)
+    pytest.fail('ready worker did not acknowledge stopping')
+
+
 @pytest.fixture
 def source(tmp_path):
     path = tmp_path / 'stereo.wav'
@@ -187,6 +199,7 @@ def test_existing_id_after_inactive_expiry_never_rebuilds(source, tmp_path):
     cache = SpectrogramCache(tmp_path / 'cache')
     result = wait_ready(cache, cache.prepare(1, 9, str(source), 1, 2, '8000', 1), str(source))
     cache.release(1, 9, result['id'], result['lease'])
+    wait_worker_ack(cache, result['id'])
     with cache._state() as state:
         state['jobs'][result['id']]['used'] = time.time() - TTL_SECONDS - 1
     with patch.object(threading.Thread, 'start') as start, patch.object(spectra, '_run') as run:
@@ -376,6 +389,7 @@ def test_lease_expiry_renewal_and_inactive_ttl_cleanup(source, tmp_path):
     from src.services.spectrogram_cache import SpectrogramCache, TTL_SECONDS
     cache = SpectrogramCache(tmp_path / 'cache')
     result = wait_ready(cache, cache.prepare(1, 9, str(source), 1, 2, '8000', 1), str(source))
+    wait_worker_ack(cache, result['id'])
     cache.renew(1, 9, result['id'], str(source), result['lease'])
     with cache._state() as state:
         state['jobs'][result['id']]['leases'][result['lease']]['until'] = time.time() - 1

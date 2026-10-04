@@ -2,6 +2,10 @@
 
 ## Synthetic ASR editor regression tests
 
+The backend tests inspect actual PNG pixels and use the test-only dependencies
+in `tests/requirements.txt` (`pip install -r requirements.txt -r tests/requirements.txt`).
+Pillow is not required by the application runtime.
+
 The ASR fixture generates tones and invented transcripts. It overrides database,
 uploads, providers and queues before importing the app; mutable data lives in
 `/tmp`. Use a disposable container without database or upload mounts. No login

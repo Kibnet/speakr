@@ -59,3 +59,28 @@ def test_the_resolver_hands_the_env_defaults_to_every_path(monkeypatch):
         assert (resolved["min_speakers"], resolved["max_speakers"]) == (2, 4)
         resolved = resolve_transcription_params(None, {"min_speakers": 3}, tags=[], folder=None, owner=None)
         assert (resolved["min_speakers"], resolved["max_speakers"]) == (3, 4)
+
+
+def _tag(min_s=None, max_s=None):
+    from types import SimpleNamespace
+    return SimpleNamespace(id=1, default_language=None, default_min_speakers=min_s, default_max_speakers=max_s,
+                           default_hotwords=None, default_initial_prompt=None, default_transcription_model=None)
+
+
+@pytest.mark.parametrize("env_min,env_max,overrides,tag,expected", [
+    ("2", "5", {}, None, (2, 5)),                          # environment alone
+    (None, "5", {}, (6, None), (6, 6)),                    # tag minimum over the env maximum: the tag wins
+    ("4", None, {"max_speakers": 2}, None, (2, 2)),        # request maximum under the env minimum: the request wins
+    ("2", "5", {"min_speakers": 3, "max_speakers": 3}, None, (3, 3)),  # exact count from the form
+    ("2", "5", {}, (1, 8), (1, 8)),                        # tag range replaces the env range
+])
+def test_speaker_bounds_from_several_levels_stay_valid(monkeypatch, env_min, env_max, overrides, tag, expected):
+    import src.config.app_config as c
+    from src.app import app
+    from src.services.transcription_defaults import resolve_transcription_params
+    monkeypatch.setattr(c, "ASR_MIN_SPEAKERS", env_min)
+    monkeypatch.setattr(c, "ASR_MAX_SPEAKERS", env_max)
+    tags = [_tag(*tag)] if tag else []
+    with app.app_context():
+        r = resolve_transcription_params(None, overrides, tags=tags, folder=None, owner=None)
+    assert (r["min_speakers"], r["max_speakers"]) == expected

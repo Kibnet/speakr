@@ -138,6 +138,10 @@ def resolve_transcription_params(recording=None, overrides=None, *, tags=None, f
 
     min_speakers = _int_or_none(overrides.get('min_speakers'))
     max_speakers = _int_or_none(overrides.get('max_speakers'))
+    # Which level each speaker bound came from (0 request, 1 tag, 2 folder,
+    # 3 environment), to settle a minimum above a maximum below.
+    min_level = 0 if min_speakers is not None else None
+    max_level = 0 if max_speakers is not None else None
     hotwords = _override_str('hotwords')
     initial_prompt = _override_str('initial_prompt')
     transcription_model = _override_str('transcription_model')
@@ -155,9 +159,9 @@ def resolve_transcription_params(recording=None, overrides=None, *, tags=None, f
         if not language and not force_auto_language and tag.default_language:
             language = tag.default_language
         if min_speakers is None and tag.default_min_speakers:
-            min_speakers = tag.default_min_speakers
+            min_speakers, min_level = tag.default_min_speakers, 1
         if max_speakers is None and tag.default_max_speakers:
-            max_speakers = tag.default_max_speakers
+            max_speakers, max_level = tag.default_max_speakers, 1
         if not hotwords and tag.default_hotwords:
             hotwords = tag.default_hotwords
         if not initial_prompt and tag.default_initial_prompt:
@@ -170,9 +174,9 @@ def resolve_transcription_params(recording=None, overrides=None, *, tags=None, f
         if not language and not force_auto_language and folder.default_language:
             language = folder.default_language
         if min_speakers is None and folder.default_min_speakers:
-            min_speakers = folder.default_min_speakers
+            min_speakers, min_level = folder.default_min_speakers, 2
         if max_speakers is None and folder.default_max_speakers:
-            max_speakers = folder.default_max_speakers
+            max_speakers, max_level = folder.default_max_speakers, 2
         if not hotwords and folder.default_hotwords:
             hotwords = folder.default_hotwords
         if not initial_prompt and folder.default_initial_prompt:
@@ -182,9 +186,18 @@ def resolve_transcription_params(recording=None, overrides=None, *, tags=None, f
 
     # Environment defaults.
     if min_speakers is None and ASR_MIN_SPEAKERS:
-        min_speakers = _int_or_none(ASR_MIN_SPEAKERS)
+        min_speakers, min_level = _int_or_none(ASR_MIN_SPEAKERS), 3
     if max_speakers is None and ASR_MAX_SPEAKERS:
-        max_speakers = _int_or_none(ASR_MAX_SPEAKERS)
+        max_speakers, max_level = _int_or_none(ASR_MAX_SPEAKERS), 3
+
+    # A minimum above the maximum can only come from two levels (a tag minimum
+    # of 6 with ASR_MAX_SPEAKERS=5, #415). The bound from the closer level
+    # wins and the other follows it; within one level the request is kept.
+    if min_speakers and max_speakers and min_speakers > max_speakers:
+        if (min_level or 0) <= (max_level or 0):
+            max_speakers = min_speakers
+        else:
+            min_speakers = max_speakers
 
     # Owner (account-level) defaults.
     if owner:

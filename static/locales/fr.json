@@ -1798,7 +1798,27 @@
     "noSharedTranscripts": "Vous n'avez encore partagé aucune transcription.",
     "shareNotes": "Partager les Notes",
     "shareSummary": "Partager le Résumé",
-    "sharedOn": "Partagé le"
+    "sharedOn": "Partagé le",
+    "sharedByMe": "Partagé par moi",
+    "sharedWithMe": "Partagé avec moi",
+    "publicLinks": "Liens publics",
+    "noPublicLinks": "Vous n'avez aucun lien public.",
+    "peopleAndGroups": "Personnes et groupes",
+    "noInternalShares": "Vous n'avez partagé aucun enregistrement avec d'autres utilisateurs.",
+    "canEdit": "Peut modifier",
+    "canView": "Peut consulter",
+    "canReshare": "Peut partager",
+    "viaGroupTag": "via le tag de groupe {{name}}",
+    "viaGroupFolder": "via le dossier de groupe {{name}}",
+    "revokeAccess": "Retirer l'accès",
+    "revoke": "Retirer",
+    "confirmRevoke": "Confirmer",
+    "groupShareNote": "Prend fin quand le tag ou le dossier est retiré",
+    "nothingSharedWithMe": "Rien n'a encore été partagé avec vous.",
+    "fromOwner": "De {{name}}",
+    "open": "Ouvrir",
+    "accessRevoked": "Accès retiré",
+    "revokeFailed": "Impossible de retirer l'accès."
   },
   "sharedTranscriptsPage": {
     "noSharedTranscripts": "Vous n'avez pas encore partagé de transcriptions."

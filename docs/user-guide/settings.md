@@ -167,15 +167,13 @@ The setting only appears when your administrator has configured email delivery a
 
 ![Shared Transcripts](../assets/images/screenshots/settings-shared-transcripts.png)
 
-The Shared Transcripts tab provides complete visibility and control over every recording you've shared.
+The Shared Transcripts tab, also opened from **Shared Transcripts** in the user menu, lists everything you have shared and everything shared with you, in three sections:
 
-### Initial State
+- **Public links**: each recording with a public link, when you created it, whether it includes the summary and notes, and the link itself.
+- **People and groups**: each recording you have shared with other users, with each person's permissions (view, edit, share). Shares made through a group tag or group folder say so; they end when the tag or folder is removed from the recording, so they have no revoke button here.
+- **Shared with me**: recordings other users have shared with you, with the owner, your permissions and a link to open each one.
 
-When first accessing this tab, you'll see "You have not shared any transcripts yet" - this changes once you create your first share link from any recording.
-
-### Share Information Display
-
-Once you've shared recordings, each entry displays the recording title, when you created the share link, what information you included (summary and/or notes), and the complete URL for access. The interface matches what you see in the sharing modal, maintaining consistency across the application.
+The last two sections appear when internal sharing is enabled. In the user menu dialog they are split into two tabs, **Shared by me** and **Shared with me**.
 
 ### Managing Share Settings
 
@@ -185,7 +183,9 @@ You can modify these settings anytime without generating new links. Toggle summa
 
 ### Revoking Access
 
-The delete button (trash icon) immediately revokes access. Once deleted, anyone trying to access that link sees an error message. This instant revocation provides security when you've accidentally shared with wrong parties or when access is no longer appropriate. Remember that deletion can't retrieve information already viewed or downloaded by recipients.
+For a person, **Revoke** asks for a second click and then removes their access, together with any shares they passed on that have no other path to them.
+
+For a public link, the delete button (trash icon) immediately revokes access. Once deleted, anyone trying to access that link sees an error message. This instant revocation provides security when you've accidentally shared with wrong parties or when access is no longer appropriate. Remember that deletion can't retrieve information already viewed or downloaded by recipients.
 
 ## Speakers Management Tab
 

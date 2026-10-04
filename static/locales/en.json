@@ -1798,7 +1798,27 @@
     "noSharedTranscripts": "You haven't shared any transcripts yet.",
     "shareNotes": "Share Notes",
     "shareSummary": "Share Summary",
-    "sharedOn": "Shared on"
+    "sharedOn": "Shared on",
+    "sharedByMe": "Shared by me",
+    "sharedWithMe": "Shared with me",
+    "publicLinks": "Public links",
+    "noPublicLinks": "You have no public links.",
+    "peopleAndGroups": "People and groups",
+    "noInternalShares": "You have not shared any recordings with other users.",
+    "canEdit": "Can edit",
+    "canView": "Can view",
+    "canReshare": "Can share",
+    "viaGroupTag": "via group tag {{name}}",
+    "viaGroupFolder": "via group folder {{name}}",
+    "revokeAccess": "Revoke access",
+    "revoke": "Revoke",
+    "confirmRevoke": "Confirm",
+    "groupShareNote": "Ends when the tag or folder is removed",
+    "nothingSharedWithMe": "Nothing has been shared with you yet.",
+    "fromOwner": "From {{name}}",
+    "open": "Open",
+    "accessRevoked": "Access revoked",
+    "revokeFailed": "Could not revoke access."
   },
   "sharedTranscriptsPage": {
     "noSharedTranscripts": "You have not shared any transcripts yet."

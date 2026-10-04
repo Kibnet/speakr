@@ -1798,7 +1798,27 @@
     "noSharedTranscripts": "Вы пока не делились транскриптами.",
     "shareNotes": "Поделиться заметками",
     "shareSummary": "Поделиться резюме",
-    "sharedOn": "Опубликовано"
+    "sharedOn": "Опубликовано",
+    "sharedByMe": "Я поделился",
+    "sharedWithMe": "Поделились со мной",
+    "publicLinks": "Публичные ссылки",
+    "noPublicLinks": "У вас нет публичных ссылок.",
+    "peopleAndGroups": "Люди и группы",
+    "noInternalShares": "Вы не делились записями с другими пользователями.",
+    "canEdit": "Может изменять",
+    "canView": "Может просматривать",
+    "canReshare": "Может делиться",
+    "viaGroupTag": "через групповой тег {{name}}",
+    "viaGroupFolder": "через групповую папку {{name}}",
+    "revokeAccess": "Отозвать доступ",
+    "revoke": "Отозвать",
+    "confirmRevoke": "Подтвердить",
+    "groupShareNote": "Действует, пока не удалён тег или папка",
+    "nothingSharedWithMe": "С вами пока ничем не поделились.",
+    "fromOwner": "От {{name}}",
+    "open": "Открыть",
+    "accessRevoked": "Доступ отозван",
+    "revokeFailed": "Не удалось отозвать доступ."
   },
   "sharedTranscriptsPage": {
     "noSharedTranscripts": "Вы пока не делились транскриптами."

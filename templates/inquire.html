@@ -663,42 +663,6 @@
             </div>
         </div>
 
-        <!-- Shares List Modal -->
-        <div v-if="showSharesListModal" class="modal-overlay">
-            <div class="modal-panel modal-panel--lg">
-                <div class="modal-header">
-                    <h3 class="modal-title" v-text="t('modal.sharedTranscripts')"></h3>
-                    <button @click="closeSharesList" class="modal-close" title="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body space-y-4">
-                    <div v-if="isLoadingShares" class="text-center">
-                        <i class="fas fa-spinner fa-spin text-2xl text-[var(--text-muted)]"></i>
-                    </div>
-                    <div v-else-if="userShares.length === 0" class="text-center text-[var(--text-muted)]">
-                        <span v-text="t('sharedTranscripts.noSharedTranscripts')"></span>
-                    </div>
-                    <div v-else class="space-y-3">
-                        <div v-for="share in userShares" :key="share.id" class="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)]">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="font-semibold">${share.recording_title}</p>
-                                    <p class="text-sm text-[var(--text-muted)]">${ t('help.sharedOn') }: ${ formatInstant(share.created_at) }</p>
-                                </div>
-                                <button @click="deleteShare(share.id)" class="text-[var(--text-danger)] hover:opacity-80 p-1"><i class="fas fa-trash"></i></button>
-                            </div>
-                            <div class="mt-4">
-                                <input :value="'{{ request.url_root }}share/' + share.public_id" readonly class="w-full px-3 py-2 bg-[var(--bg-input)] border border-[var(--border-secondary)] rounded-lg text-sm">
-                                <button @click="copyShareLink(share.public_id)" class="mt-2 px-3 py-1 bg-[var(--bg-button)] text-[var(--text-button)] rounded-lg text-sm hover:bg-[var(--bg-button-hover)]">
-                                    <i class="fas fa-copy mr-2"></i>Copy Link
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- CSRF Token Management -->

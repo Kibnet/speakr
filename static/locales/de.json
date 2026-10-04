@@ -1798,7 +1798,27 @@
     "noSharedTranscripts": "Sie haben noch keine Transkripte geteilt.",
     "shareNotes": "Notizen Teilen",
     "shareSummary": "Zusammenfassung Teilen",
-    "sharedOn": "Geteilt am"
+    "sharedOn": "Geteilt am",
+    "sharedByMe": "Von mir geteilt",
+    "sharedWithMe": "Mit mir geteilt",
+    "publicLinks": "Öffentliche Links",
+    "noPublicLinks": "Sie haben keine öffentlichen Links.",
+    "peopleAndGroups": "Personen und Gruppen",
+    "noInternalShares": "Sie haben keine Aufnahmen mit anderen Benutzern geteilt.",
+    "canEdit": "Darf bearbeiten",
+    "canView": "Darf ansehen",
+    "canReshare": "Darf teilen",
+    "viaGroupTag": "über Gruppen-Tag {{name}}",
+    "viaGroupFolder": "über Gruppenordner {{name}}",
+    "revokeAccess": "Zugriff entziehen",
+    "revoke": "Entziehen",
+    "confirmRevoke": "Bestätigen",
+    "groupShareNote": "Endet, wenn Tag oder Ordner entfernt wird",
+    "nothingSharedWithMe": "Mit Ihnen wurde noch nichts geteilt.",
+    "fromOwner": "Von {{name}}",
+    "open": "Öffnen",
+    "accessRevoked": "Zugriff entzogen",
+    "revokeFailed": "Der Zugriff konnte nicht entzogen werden."
   },
   "sharedTranscriptsPage": {
     "noSharedTranscripts": "Sie haben noch keine Transkripte geteilt."

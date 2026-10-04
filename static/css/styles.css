@@ -4973,3 +4973,18 @@ select:disabled {
     .spk-modal .spk-seg-actions { grid-column: 3; grid-row: 1; }
     .spk-modal .spk-right { padding: var(--sp-3); }
 }
+
+
+/* Right-to-left text (#414). Each paragraph takes its direction from its
+   first letter, so Arabic, Hebrew, Persian or Urdu aligns right inside the
+   left-to-right interface, and a transcript or summary that switches
+   language changes direction line by line. No language setting is needed. */
+.speaker-text,
+.speaker-bubble-content,
+.transcript-segment,
+.spk-seg-text,
+.bidi-auto,
+:is(.prose-flush, .prose, .summary-box, .notes-box, .notes-preview, .bidi-auto) :is(p, li, h1, h2, h3, h4, h5, h6, blockquote, td, th, dt, dd) {
+    unicode-bidi: plaintext;
+    text-align: start;
+}

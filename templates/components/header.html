@@ -46,6 +46,7 @@
                         selectedRecording.is_shared ? 'text-[var(--text-accent)]' : 'text-[var(--text-primary)]',
                         selectedRecording.can_edit !== false ? 'cursor-text hover:opacity-80' : ''
                     ]"
+                    dir="auto"
                     :title="selectedRecording.title || 'Untitled Recording'">
                     ${selectedRecording.title || 'Untitled Recording'}
                 </h1>

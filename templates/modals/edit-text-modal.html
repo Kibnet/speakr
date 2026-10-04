@@ -7,7 +7,7 @@
         </div>
         <div class="modal-body">
             <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Text Content</label>
-            <textarea v-model="editedText" rows="6" class="field" style="resize: vertical; min-height: 144px;" placeholder="Enter transcript text..."></textarea>
+            <textarea dir="auto" v-model="editedText" rows="6" class="field" style="resize: vertical; min-height: 144px;" placeholder="Enter transcript text..."></textarea>
         </div>
         <div class="modal-footer">
             <button @click="closeEditTextModal" class="btn btn--ghost">${ t('buttons.cancel') }</button>

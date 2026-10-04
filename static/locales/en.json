@@ -116,7 +116,11 @@
     "storageOfQuota": "{{used}} of {{quota}}",
     "storageNoLimit": "{{used}} used, no limit",
     "storageFull": "Your storage is full. Uploads and new recordings are refused until you delete recordings or remove their audio.",
-    "storageHelp": "Counts the audio and video you keep. Recordings with their audio removed do not count."
+    "storageHelp": "Counts the audio and video you keep. Recordings with their audio removed do not count.",
+    "usageAndLimits": "Usage and Limits",
+    "aiTokensMonth": "AI tokens this month",
+    "transcriptionMonth": "Transcription this month",
+    "usageHelp": "AI tokens and transcription minutes count from the start of each month. Storage counts the audio and video you keep; recordings with their audio removed do not count."
   },
   "accountTabs": {
     "about": "About",

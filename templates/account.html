@@ -543,42 +543,10 @@
                     {% endif %}
                 {% endwith %}
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Left Column: Form -->
-                    <div>
-                        <form id="accountInfoForm" method="POST" action="{{ url_for('auth.account') }}" class="space-y-6">
-                            <div class="mb-6">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                <h3 class="text-lg font-medium text-[var(--text-secondary)] mb-2" data-i18n="account.personalInfo">Personal Information</h3>
-                                <div class="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)] space-y-4">
-                                    <div>
-                                        <label for="user_name" class="block text-sm font-medium text-[var(--text-muted)]" data-i18n="account.fullName">Full Name</label>
-                                        <input type="text" name="user_name" id="user_name" value="{{ current_user.name or '' }}" data-i18n-placeholder="form.yourFullName" class="mt-1 block w-full px-3 py-2 border border-[var(--border-secondary)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] sm:text-sm bg-[var(--bg-input)] text-[var(--text-primary)]">
-                                    </div>
-                                    <div>
-                                        <label for="user_job_title" class="block text-sm font-medium text-[var(--text-muted)]" data-i18n="account.jobTitle">Job Title</label>
-                                        <input type="text" name="user_job_title" id="user_job_title" value="{{ current_user.job_title or '' }}" placeholder="e.g., Software Engineer" class="mt-1 block w-full px-3 py-2 border border-[var(--border-secondary)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] sm:text-sm bg-[var(--bg-input)] text-[var(--text-primary)]">
-                                    </div>
-                                    <div>
-                                        <label for="user_company" class="block text-sm font-medium text-[var(--text-muted)]" data-i18n="account.companyOrganization">Company / Organization</label>
-                                        <input type="text" name="user_company" id="user_company" value="{{ current_user.company or '' }}" placeholder="e.g., Acme Corp" class="mt-1 block w-full px-3 py-2 border border-[var(--border-secondary)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] sm:text-sm bg-[var(--bg-input)] text-[var(--text-primary)]">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Save button moved to the sticky tab-footer
-                                 at the bottom of this content area; the
-                                 button there uses form="accountInfoForm"
-                                 to submit this form. -->
-                        </form>
-                    </div>
-                    
-                    <!-- Right Column: Stats, User Details, Account Actions -->
-                    <div class="space-y-6">
-                        <div>
+                <div class="mb-8">
                             <h3 class="text-lg font-medium text-[var(--text-secondary)] mb-2" data-i18n="account.statistics">Account Statistics</h3>
                             <div class="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)]">
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div class="text-center p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] shadow-sm">
                                         <span class="block text-3xl font-bold text-[var(--text-accent)]">{{ current_user.recordings|length }}</span>
                                         <span class="block text-sm text-[var(--text-muted)]" data-i18n="account.totalRecordings">Total Recordings</span>
@@ -608,34 +576,37 @@
                                         <span class="block text-sm text-[var(--text-muted)]" data-i18n="account.failedRecordings">Failed</span>
                                     </div>
                                 </div>
-                                {# Storage used, against the quota when there is one (#413) #}
-                                {% if storage_usage %}
-                                {% macro size(n) %}{% if n >= 1073741824 %}{{ '%.1f'|format(n / 1073741824) }} GB{% else %}{{ '%.1f'|format(n / 1048576) }} MB{% endif %}{% endmacro %}
-                                {% set pct = storage_usage.percentage %}
-                                <div class="mt-4 p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] shadow-sm" id="account-storage">
-                                    <div class="flex items-baseline justify-between gap-3 text-sm">
-                                        <span class="font-medium text-[var(--text-secondary)]" data-i18n="account.storage">Storage</span>
-                                        {% if storage_usage.quota_bytes %}
-                                        <span class="text-[var(--text-primary)] tabular-nums" data-i18n="account.storageOfQuota" data-i18n-params='{"used": "{{ size(storage_usage.used_bytes)|trim }}", "quota": "{{ size(storage_usage.quota_bytes)|trim }}"}'>{{ size(storage_usage.used_bytes)|trim }} of {{ size(storage_usage.quota_bytes)|trim }}</span>
-                                        {% else %}
-                                        <span class="text-[var(--text-primary)] tabular-nums" data-i18n="account.storageNoLimit" data-i18n-params='{"used": "{{ size(storage_usage.used_bytes)|trim }}"}'>{{ size(storage_usage.used_bytes)|trim }} used, no limit</span>
-                                        {% endif %}
-                                    </div>
-                                    {% if storage_usage.quota_bytes %}
-                                    <div class="w-full bg-[var(--bg-tertiary)] rounded-full h-2 mt-2">
-                                        <div class="h-2 rounded-full {% if pct >= 100 %}bg-[var(--text-danger-strong)]{% elif pct >= 80 %}bg-[var(--text-warn-strong)]{% else %}bg-[var(--text-success-strong)]{% endif %}" style="width: {{ [pct, 100]|min }}%"></div>
-                                    </div>
-                                    {% if pct >= 100 %}
-                                    <p class="text-xs text-[var(--text-danger-strong)] mt-2" data-i18n="account.storageFull">Your storage is full. Uploads and new recordings are refused until you delete recordings or remove their audio.</p>
-                                    {% endif %}
-                                    {% endif %}
-                                    <p class="text-xs text-[var(--text-muted)] mt-2" data-i18n="account.storageHelp">Counts the audio and video you keep. Recordings with their audio removed do not count.</p>
-                                </div>
-                                {% endif %}
                             </div>
                         </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Left Column: personal information, user details -->
+                    <div class="space-y-6">
+                        <form id="accountInfoForm" method="POST" action="{{ url_for('auth.account') }}" class="space-y-6">
+                            <div class="mb-6">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <h3 class="text-lg font-medium text-[var(--text-secondary)] mb-2" data-i18n="account.personalInfo">Personal Information</h3>
+                                <div class="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)] space-y-4">
+                                    <div>
+                                        <label for="user_name" class="block text-sm font-medium text-[var(--text-muted)]" data-i18n="account.fullName">Full Name</label>
+                                        <input type="text" name="user_name" id="user_name" value="{{ current_user.name or '' }}" data-i18n-placeholder="form.yourFullName" class="mt-1 block w-full px-3 py-2 border border-[var(--border-secondary)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] sm:text-sm bg-[var(--bg-input)] text-[var(--text-primary)]">
+                                    </div>
+                                    <div>
+                                        <label for="user_job_title" class="block text-sm font-medium text-[var(--text-muted)]" data-i18n="account.jobTitle">Job Title</label>
+                                        <input type="text" name="user_job_title" id="user_job_title" value="{{ current_user.job_title or '' }}" placeholder="e.g., Software Engineer" class="mt-1 block w-full px-3 py-2 border border-[var(--border-secondary)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] sm:text-sm bg-[var(--bg-input)] text-[var(--text-primary)]">
+                                    </div>
+                                    <div>
+                                        <label for="user_company" class="block text-sm font-medium text-[var(--text-muted)]" data-i18n="account.companyOrganization">Company / Organization</label>
+                                        <input type="text" name="user_company" id="user_company" value="{{ current_user.company or '' }}" placeholder="e.g., Acme Corp" class="mt-1 block w-full px-3 py-2 border border-[var(--border-secondary)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--border-focus)] focus:border-[var(--border-focus)] sm:text-sm bg-[var(--bg-input)] text-[var(--text-primary)]">
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div class="mt-6"> <!-- Added mt-6 for spacing, was mb-6 on User Details -->
+                            <!-- Save button moved to the sticky tab-footer
+                                 at the bottom of this content area; the
+                                 button there uses form="accountInfoForm"
+                                 to submit this form. -->
+                        </form>
+                        <div>
                             <h3 class="text-lg font-medium text-[var(--text-secondary)] mb-2" data-i18n="account.userDetails">User Details</h3>
                             <div class="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)]">
                                 <div class="mb-3">
@@ -649,13 +620,50 @@
                             </div>
                         </div>
 
+                    </div>
+
+                    <!-- Right Column: usage and limits, sign-in -->
+                    <div class="space-y-6">
+                        <!-- Usage and limits: AI tokens and transcription this
+                             month, and storage, each against its limit when the
+                             administrator set one (#413). -->
+                        {% if usage_limits %}
+                        <div>
+                            <h3 class="text-lg font-medium text-[var(--text-secondary)] mb-2" data-i18n="account.usageAndLimits">Usage and Limits</h3>
+                            <div class="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)] space-y-4" id="account-storage">
+                                {% for row in usage_limits %}
+                                {% set pct = row.percentage %}
+                                <div>
+                                    <div class="flex items-baseline justify-between gap-3 text-sm">
+                                        <span class="font-medium text-[var(--text-secondary)]"><i class="fas {{ row.icon }} mr-1.5 text-[var(--text-muted)]"></i><span data-i18n="{{ row.label_key }}">{{ row.key }}</span></span>
+                                        {% if row.limit %}
+                                        <span class="text-[var(--text-primary)] tabular-nums whitespace-nowrap" data-i18n="account.storageOfQuota" data-i18n-params='{"used": "{{ row.used }}", "quota": "{{ row.limit }}"}'>{{ row.used }} of {{ row.limit }}</span>
+                                        {% else %}
+                                        <span class="text-[var(--text-primary)] tabular-nums whitespace-nowrap" data-i18n="account.storageNoLimit" data-i18n-params='{"used": "{{ row.used }}"}'>{{ row.used }} used, no limit</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if row.limit %}
+                                    <div class="w-full bg-[var(--bg-secondary)] rounded-full h-2 mt-2">
+                                        <div class="h-2 rounded-full {% if pct >= 100 %}bg-[var(--text-danger-strong)]{% elif pct >= 80 %}bg-[var(--text-warn-strong)]{% else %}bg-[var(--text-success-strong)]{% endif %}" style="width: {{ [pct, 100]|min }}%"></div>
+                                    </div>
+                                    {% if row.key == 'storage' and pct >= 100 %}
+                                    <p class="text-xs text-[var(--text-danger-strong)] mt-2" data-i18n="account.storageFull">Your storage is full. Uploads and new recordings are refused until you delete recordings or remove their audio.</p>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                                <p class="text-xs text-[var(--text-muted)] border-t border-[var(--border-primary)] pt-3" data-i18n="account.usageHelp">AI tokens and transcription minutes count from the start of each month. Storage counts the audio and video you keep; recordings with their audio removed do not count.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <!-- Sign-in & Security — combines the Single Sign-On
                              provider controls and the password (change /
                              set) flow into one section since they're both
                              ways the user authenticates into the account.
                              "Go to Recordings" link removed; the
                              page-header Speakr logo is the natural exit. -->
-                        <div class="mt-6">
+                        <div>
                             <h3 class="text-lg font-medium text-[var(--text-secondary)] mb-2" data-i18n="account.signInSecurity">Sign-in & Security</h3>
                             <div class="bg-[var(--bg-tertiary)] p-4 rounded-lg border border-[var(--border-primary)] space-y-4">
                                 {% if sso_enabled %}

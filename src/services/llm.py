@@ -153,8 +153,15 @@ http_client_no_proxy = httpx.Client(
     headers=app_headers
 )
 
-# Create client with placeholder key if not provided (allows app to start)
+# A language model is configured when it has a key or its server address was
+# set explicitly; a local server often needs no key (#403). Without either,
+# no client is created and nothing is sent: the default address is a hosted
+# service, and a transcript must never go there unasked.
+TEXT_MODEL_CONFIGURED = bool(TEXT_MODEL_API_KEY) or bool(os.environ.get("TEXT_MODEL_BASE_URL", "").split('#')[0].strip())
+
 try:
+    if not TEXT_MODEL_CONFIGURED:
+        raise RuntimeError("no text model configured (set TEXT_MODEL_BASE_URL, and TEXT_MODEL_API_KEY for a hosted service)")
     api_key = TEXT_MODEL_API_KEY or "not-needed"
     client = OpenAI(
         api_key=api_key,
@@ -180,6 +187,8 @@ def _build_chat_client():
     chat_config = get_chat_config()
     if (chat_config['api_key'], chat_config['base_url']) == (TEXT_MODEL_API_KEY, TEXT_MODEL_BASE_URL):
         return client
+    if not (CHAT_MODEL_API_KEY or CHAT_MODEL_BASE_URL or TEXT_MODEL_CONFIGURED):
+        return None
     dedicated = OpenAI(
         api_key=chat_config['api_key'] or "not-needed",
         base_url=chat_config['base_url'],
@@ -245,7 +254,7 @@ def call_llm_completion(messages, temperature=0.7, response_format=None, stream=
         OpenAI completion object or generator (if streaming)
     """
     if not client:
-        raise ValueError("LLM client not initialized")
+        raise ValueError("No text model is configured. Set TEXT_MODEL_BASE_URL, and TEXT_MODEL_API_KEY for a hosted service.")
 
     # Check budget before making the call
     if user_id and operation_type:

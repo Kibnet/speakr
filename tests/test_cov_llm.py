@@ -183,7 +183,7 @@ def test_get_chat_config_base_url_falls_back_to_text(monkeypatch):
 
 def test_call_llm_completion_no_client(monkeypatch):
     monkeypatch.setattr(llm, "client", None)
-    with pytest.raises(ValueError, match="not initialized"):
+    with pytest.raises(ValueError, match="No text model is configured"):
         call_llm_completion([{"role": "user", "content": "hi"}])
 
 

@@ -2295,5 +2295,9 @@
     "guidance": "Elimine grabaciones o quite su audio, o pida a un administrador una cuota mayor.",
     "uploadRefused": "Este archivo no cabe en su almacenamiento: {{used}} de {{quota}} usados, y el archivo ocupa {{file}}.",
     "recordingBlocked": "Su almacenamiento está lleno ({{used}} de {{quota}}). Elimine grabaciones o quite su audio antes de volver a grabar."
+  },
+  "usageMeters": {
+    "tokenTooltip": "Tokens de IA este mes: {{used}} de {{budget}}",
+    "storageTooltip": "Almacenamiento: {{used}} de {{quota}}"
   }
 }

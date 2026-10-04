@@ -2295,5 +2295,9 @@
     "guidance": "Exclua gravações ou remova o áudio delas, ou peça a um administrador uma cota maior.",
     "uploadRefused": "Este arquivo não cabe no seu armazenamento: {{used}} de {{quota}} usados, e o arquivo tem {{file}}.",
     "recordingBlocked": "Seu armazenamento está cheio ({{used}} de {{quota}}). Exclua gravações ou remova o áudio delas antes de gravar novamente."
+  },
+  "usageMeters": {
+    "tokenTooltip": "Tokens de IA neste mês: {{used}} de {{budget}}",
+    "storageTooltip": "Armazenamento: {{used}} de {{quota}}"
   }
 }

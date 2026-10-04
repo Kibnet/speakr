@@ -240,3 +240,16 @@ def test_users_see_their_usage(world):
     with app.test_client() as c:
         me = c.get("/api/v1/users/me", headers={"Authorization": f"Bearer {plain}"}).get_json()
     assert me["storage"] == {"used_bytes": 2 * MB, "quota_bytes": 10 * MB, "available_bytes": 8 * MB}
+
+
+def test_the_header_meter_reports_storage_only_with_a_quota(world):
+    u = world["user"](quota_mb=10)
+    world["rec"](u, 9 * MB)
+    client = app.test_client()
+    _login(client, u)
+    storage = client.get("/api/user/token-budget").get_json()["storage"]
+    assert storage["has_quota"] is True and storage["percentage"] == 90.0
+    assert storage["used_label"] == "9.0 MB" and storage["quota_label"] == "10.0 MB"
+    free = world["user"]()
+    _login(client, free)
+    assert client.get("/api/user/token-budget").get_json()["storage"]["has_quota"] is False

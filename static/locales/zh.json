@@ -2295,5 +2295,9 @@
     "guidance": "请删除录音或删除其音频，或请管理员提高配额。",
     "uploadRefused": "此文件超出您的存储空间：已用 {{used}}，共 {{quota}}，文件大小 {{file}}。",
     "recordingBlocked": "您的存储已满（已用 {{used}}，共 {{quota}}）。请先删除录音或删除其音频再录音。"
+  },
+  "usageMeters": {
+    "tokenTooltip": "本月 AI 令牌：{{used}} / {{budget}}",
+    "storageTooltip": "存储：{{used}} / {{quota}}"
   }
 }

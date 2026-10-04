@@ -2295,5 +2295,9 @@
     "guidance": "Löschen Sie Aufnahmen oder entfernen Sie deren Audio, oder bitten Sie einen Administrator um ein größeres Kontingent.",
     "uploadRefused": "Diese Datei passt nicht in Ihren Speicher: {{used}} von {{quota}} belegt, die Datei hat {{file}}.",
     "recordingBlocked": "Ihr Speicher ist voll ({{used}} von {{quota}}). Löschen Sie Aufnahmen oder entfernen Sie deren Audio, bevor Sie erneut aufnehmen."
+  },
+  "usageMeters": {
+    "tokenTooltip": "KI-Tokens diesen Monat: {{used}} von {{budget}}",
+    "storageTooltip": "Speicher: {{used}} von {{quota}}"
   }
 }

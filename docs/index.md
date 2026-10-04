@@ -128,6 +128,13 @@ Learn more about [audio synchronization features](user-guide/transcripts.md#audi
 
 ## Latest Updates
 
+!!! info "Version 0.10.13-alpha - Storage quotas, shared transcripts, right-to-left text"
+    One new column and one new setting are added at startup; nothing is limited until an administrator sets a quota.
+
+    - **Storage** - Per-user storage quotas with a default for new accounts; usage under Account and in the header (#413).
+    - **Sharing** - Shared Transcripts lists public links, shares with people and groups, and recordings shared with you (#416).
+    - **Fixes** - Right-to-left text (#414), speaker counts from `.env` (#415), local language models without an API key.
+
 !!! info "Version 0.10.12-alpha - System Statistics"
     No database or configuration changes are required.
 

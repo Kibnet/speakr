@@ -211,6 +211,8 @@ def register():
             password=hashed_password,
             email_verified=email_verified
         )
+        from src.services.storage_quota import default_quota_mb
+        user.storage_quota_mb = default_quota_mb()
         db.session.add(user)
         db.session.commit()
 
@@ -612,6 +614,23 @@ def reset_password(token):
     return render_template('auth/reset_password.html', title='Reset Password', token=token)
 
 
+def _storage_usage(user):
+    try:
+        from src.services.storage_quota import usage
+        return usage(user)
+    except Exception as e:
+        current_app.logger.warning(f"Could not read storage usage for user {user.id}: {e}")
+        return None
+
+
+@auth_bp.route('/api/account/storage', methods=['GET'])
+@login_required
+def account_storage():
+    """The signed-in user's storage use and quota (#413)."""
+    from src.services.storage_quota import usage
+    return jsonify(usage(current_user))
+
+
 @auth_bp.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
@@ -860,6 +879,7 @@ def account():
 
     return render_template('account.html',
                            title='Account',
+                           storage_usage=_storage_usage(current_user),
                            default_summary_prompt_text=default_summary_prompt_text,
                            default_title_prompt_text=default_title_prompt_text,
                            use_asr_endpoint=USE_ASR_ENDPOINT,

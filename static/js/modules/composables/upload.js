@@ -25,6 +25,7 @@ function getFriendlyError(errorMessage, t) {
         // generic 413 pattern below; the proxy rejects the request body before
         // Speakr sees it, so enabling chunking on the Speakr side will not help.
         { patterns: ['request entity too large', 'request body is too large', '413 request entity too large'], title: _t('errors.uploadBlockedByProxyTitle'), guidance: _t('errors.uploadBlockedByProxyGuidance') },
+        { patterns: ['storage quota', 'storage is full'], title: _t('storageQuota.title'), guidance: _t('storageQuota.guidance') },
         { patterns: ['maximum content size limit', 'file too large', 'payload too large', 'exceeded', 'content too large'], title: _t('errors.fileTooLargeTitle'), guidance: _t('errors.enableChunkingGuidance') },
         { patterns: ['timed out', 'timeout', 'deadline exceeded'], title: _t('errors.processingTimeout'), guidance: _t('errors.splitAudioGuidance') },
         { patterns: ['401', 'unauthorized', 'invalid api key', 'authentication failed', 'incorrect api key'], title: _t('errors.authenticationError'), guidance: _t('errors.checkApiKeyGuidance') },
@@ -573,6 +574,9 @@ export function useUpload(state, utils) {
         try {
             const formData = new FormData();
             if (!sliced) formData.append('file', fileItem.file);
+            // A recording made here was checked against the storage quota
+            // when it started, so the server keeps it whatever its size (#413).
+            if (fileItem.fromInProgressRecording) formData.append('from_recorder', 'true');
 
             // Send file's lastModified timestamp for meeting_date
             if (fileItem.file.lastModified) {
@@ -733,6 +737,13 @@ export function useUpload(state, utils) {
                     } else if (!String(xhr.status).startsWith('2')) {
                         let errorMsg = parsed.error || `Upload failed with status ${xhr.status}`;
                         if (xhr.status === 413) errorMsg = parsed.error || `File too large. Max: ${parsed.max_size_mb?.toFixed(0) || maxFileSizeMB.value} MB.`;
+                        if (parsed.code === 'storage_quota_exceeded' && t) {
+                            const quotaMsg = t('storageQuota.uploadRefused', {
+                                used: formatFileSize(parsed.used_bytes), quota: formatFileSize(parsed.quota_bytes),
+                                file: formatFileSize(parsed.file_bytes),
+                            });
+                            if (quotaMsg && quotaMsg !== 'storageQuota.uploadRefused') errorMsg = quotaMsg;
+                        }
                         const err = new Error(errorMsg);
                         if (isCsrfRejection(xhr.status, parsed.error || '')) {
                             err.isCsrfRejection = true;

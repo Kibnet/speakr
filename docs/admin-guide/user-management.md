@@ -60,6 +60,23 @@ Transcription budgets are set in minutes with a minimum of 10 minutes. The budge
 - **OpenAI Transcribe**: $0.003-$0.006 per minute depending on model
 - **Self-hosted ASR**: $0 (no external API costs)
 
+### Storage Quotas
+
+Limit how much audio and video each user keeps on the server. Set **Storage quota (MB)** when creating or editing a user; leave it empty for no limit. The Edit User dialog and the users table show the storage in use against the quota, and so does the users table in [System Statistics](statistics.md#users).
+
+**What counts**: the size of the user's own recordings whose audio is kept, including archived recordings and recordings protected from auto-deletion. Recordings with their audio removed do not count, and a recording shared with someone counts for its owner only.
+
+**When the quota is reached**:
+
+- **Uploads** from the browser, the API, the share target, the ASR Voice Recorder app and sliced uploads are refused when the file would go over the quota. The user sees how much is used and how large the file is. The API answers `507` with the code `storage_quota_exceeded`.
+- **Recordings made in the app** cannot start once the quota is reached. A recording already in progress is always kept, even if it goes over the quota.
+- **The watch folder** leaves a file that does not fit where it is and tells the user once, in their notifications. The file is added on a later scan once there is room.
+- **Merging** recordings that keeps the originals needs room for the merged copy; a merge that deletes the originals is always allowed.
+
+Users see their storage, and the quota when there is one, under **Account → Account Statistics**. They free space by deleting recordings or by removing their audio.
+
+**Default for new accounts**: the System Setting `default_storage_quota_mb` gives every account created afterwards a quota (0 means no limit). It applies to accounts created by an administrator, by registration and by SSO; existing accounts keep their own quota.
+
 ## Managing Existing Users
 
 Each user row includes action buttons that give you complete control over that account. The edit button opens a modal where you can update their username or email address. This is useful when people change names, switch email providers, or when you need to correct initial entry mistakes.

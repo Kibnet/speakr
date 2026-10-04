@@ -111,7 +111,12 @@
     "contextualSpeakerLabellingHelp": "Speakers are matched from the conversation context because your transcription engine does not provide voice fingerprints. This can be quite inaccurate, depending on how much the conversation reveals about who is speaking and how well your model separates speakers. For the most accurate, voice-based speaker matching, the WhisperX ASR container is recommended.",
     "timezone": "Timezone",
     "timezoneAutomatic": "Automatic (this device)",
-    "timezoneHelp": "Used for dates in titles from naming templates. Dates shown on pages always follow this device."
+    "timezoneHelp": "Used for dates in titles from naming templates. Dates shown on pages always follow this device.",
+    "storage": "Storage",
+    "storageOfQuota": "{{used}} of {{quota}}",
+    "storageNoLimit": "{{used}} used, no limit",
+    "storageFull": "Your storage is full. Uploads and new recordings are refused until you delete recordings or remove their audio.",
+    "storageHelp": "Counts the audio and video you keep. Recordings with their audio removed do not count."
   },
   "accountTabs": {
     "about": "About",
@@ -428,7 +433,12 @@
         "transcription": "Transcription"
       },
       "cacheLine": "Prompt cache: {{reads}} tokens read from the cache, {{writes}} written, in this period"
-    }
+    },
+    "storageQuota": "Storage quota (MB)",
+    "storageQuotaPlaceholder": "No limit",
+    "storageQuotaNewPlaceholder": "Default from System Settings",
+    "storageQuotaHelp": "Uploads that would go over the quota are refused. Recordings with their audio removed do not count. Leave empty for no limit.",
+    "storageUsedLabel": "Storage used"
   },
   "apiTokens": {
     "activeTokens": "Active Tokens",
@@ -917,7 +927,8 @@
     "uploadFailedWithStatus": "Upload failed with status {{status}}",
     "uploadTimedOut": "Upload timed out",
     "validationError": "Validation error",
-    "waitAndRetryGuidance": "Wait a few minutes and try again"
+    "waitAndRetryGuidance": "Wait a few minutes and try again",
+    "shareTarget_storage_quota": "The shared file was not saved because your storage is full."
   },
   "eventExtraction": {
     "description": "When enabled, the AI will identify meetings, appointments, and deadlines mentioned in your recordings and create downloadable calendar events.",
@@ -1589,7 +1600,8 @@
     "dismiss": "Dismiss",
     "empty": "Nothing needs your attention.",
     "view": "View",
-    "voiceEmbeddingChanged": "The transcription service is returning voice embeddings from a different model. Voice profiles are kept separately for each model: profiles from the previous model will not match new recordings and come back if you restore the previous backend, and profiles for the new model are learned as you name speakers."
+    "voiceEmbeddingChanged": "The transcription service is returning voice embeddings from a different model. Voice profiles are kept separately for each model: profiles from the previous model will not match new recordings and come back if you restore the previous backend, and profiles for the new model are learned as you name speakers.",
+    "storageQuotaReached": "{{filename}} was left in the watch folder because your storage is full ({{used_mb}} MB of {{quota_mb}} MB). It is added once there is room."
   },
   "preferences": {
     "description": "Display and editor behaviour preferences. These settings are saved to your account and apply across devices.",
@@ -2249,5 +2261,11 @@
     "secretBannerTitle": "Copy this secret now — it will not be shown again",
     "secretBannerHint": "Sign every receiver request: HMAC-SHA256 of the raw body using this secret. Header: Speakr-Signature: sha256=<hex>",
     "copy": "Copy"
+  },
+  "storageQuota": {
+    "title": "Storage full",
+    "guidance": "Delete recordings or remove their audio, or ask an administrator for a larger quota.",
+    "uploadRefused": "This file does not fit in your storage: {{used}} of {{quota}} used, and the file is {{file}}.",
+    "recordingBlocked": "Your storage is full ({{used}} of {{quota}}). Delete recordings or remove their audio before recording again."
   }
 }

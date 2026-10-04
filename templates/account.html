@@ -608,6 +608,30 @@
                                         <span class="block text-sm text-[var(--text-muted)]" data-i18n="account.failedRecordings">Failed</span>
                                     </div>
                                 </div>
+                                {# Storage used, against the quota when there is one (#413) #}
+                                {% if storage_usage %}
+                                {% macro size(n) %}{% if n >= 1073741824 %}{{ '%.1f'|format(n / 1073741824) }} GB{% else %}{{ '%.1f'|format(n / 1048576) }} MB{% endif %}{% endmacro %}
+                                {% set pct = storage_usage.percentage %}
+                                <div class="mt-4 p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] shadow-sm" id="account-storage">
+                                    <div class="flex items-baseline justify-between gap-3 text-sm">
+                                        <span class="font-medium text-[var(--text-secondary)]" data-i18n="account.storage">Storage</span>
+                                        {% if storage_usage.quota_bytes %}
+                                        <span class="text-[var(--text-primary)] tabular-nums" data-i18n="account.storageOfQuota" data-i18n-params='{"used": "{{ size(storage_usage.used_bytes)|trim }}", "quota": "{{ size(storage_usage.quota_bytes)|trim }}"}'>{{ size(storage_usage.used_bytes)|trim }} of {{ size(storage_usage.quota_bytes)|trim }}</span>
+                                        {% else %}
+                                        <span class="text-[var(--text-primary)] tabular-nums" data-i18n="account.storageNoLimit" data-i18n-params='{"used": "{{ size(storage_usage.used_bytes)|trim }}"}'>{{ size(storage_usage.used_bytes)|trim }} used, no limit</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if storage_usage.quota_bytes %}
+                                    <div class="w-full bg-[var(--bg-tertiary)] rounded-full h-2 mt-2">
+                                        <div class="h-2 rounded-full {% if pct >= 100 %}bg-[var(--text-danger-strong)]{% elif pct >= 80 %}bg-[var(--text-warn-strong)]{% else %}bg-[var(--text-success-strong)]{% endif %}" style="width: {{ [pct, 100]|min }}%"></div>
+                                    </div>
+                                    {% if pct >= 100 %}
+                                    <p class="text-xs text-[var(--text-danger-strong)] mt-2" data-i18n="account.storageFull">Your storage is full. Uploads and new recordings are refused until you delete recordings or remove their audio.</p>
+                                    {% endif %}
+                                    {% endif %}
+                                    <p class="text-xs text-[var(--text-muted)] mt-2" data-i18n="account.storageHelp">Counts the audio and video you keep. Recordings with their audio removed do not count.</p>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
 

@@ -824,6 +824,17 @@ def merge_recordings_endpoint():
     else:
         notes_source_id = _UNSET
 
+    # Storage quota (#413): keeping the originals adds a copy of their audio.
+    if not delete_originals:
+        from src.services.storage_quota import check_room, StorageQuotaExceeded
+        merged_bytes = db.session.query(db.func.coalesce(db.func.sum(Recording.file_size), 0)).filter(
+            Recording.id.in_([int(i) for i in recording_ids if str(i).isdigit()]),
+            Recording.user_id == current_user.id, Recording.audio_deleted_at.is_(None)).scalar() or 0
+        try:
+            check_room(current_user, int(merged_bytes))
+        except StorageQuotaExceeded as quota_error:
+            return quota_error.response()
+
     try:
         recording = create_merge_recording(
             current_user,
@@ -2128,7 +2139,7 @@ def share_target():
     data = resp.get_json(silent=True) or {}
     if status >= 400 or not data.get('id'):
         current_app.logger.warning(f"share-target ingest failed ({status}): {data.get('error')}")
-        error = 'too_large' if status == 413 else 'save_failed'
+        error = {413: 'too_large', 507: 'storage_quota'}.get(status, 'save_failed')
         return redirect(url_for('recordings.index') + f'?share_target_error={error}')
 
     return redirect(url_for('recordings.index') + f"?share_target=ok&recording_id={data['id']}")
@@ -2272,6 +2283,20 @@ def ingest_uploaded_recording(
             or original_file_size > effective_limit_bytes
         ):
             raise RequestEntityTooLarge()
+
+        # Storage quota (#413). A recording made in this browser was checked
+        # when it started and is not refused at the end, so it is never lost;
+        # only a signed-in browser can say so, never an API token.
+        from src.services.storage_quota import check_room, StorageQuotaExceeded
+        from src.utils.token_auth import current_api_token
+        recorded_in_app = (str(form.get('from_recorder', '')).lower() == 'true'
+                           and current_api_token() is None)
+        if not recorded_in_app:
+            try:
+                check_room(owner, original_file_size)
+            except StorageQuotaExceeded as quota_error:
+                current_app.logger.info(f"Upload refused for user {owner.id}: {quota_error}")
+                return quota_error.response()
 
         file.save(filepath)
         current_app.logger.info(f"File saved to {filepath}")

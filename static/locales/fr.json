@@ -111,7 +111,12 @@
     "contextualSpeakerLabellingHelp": "Les locuteurs sont identifiés à partir du contexte de la conversation, car votre moteur de transcription ne fournit pas d'empreintes vocales. Cela peut être assez imprécis, selon ce que la conversation révèle sur l'identité des locuteurs et la capacité de votre modèle à les distinguer. Pour la correspondance de locuteurs la plus précise, basée sur la voix, le conteneur WhisperX ASR est recommandé.",
     "timezone": "Fuseau horaire",
     "timezoneAutomatic": "Automatique (cet appareil)",
-    "timezoneHelp": "Utilisé pour les dates des titres issus des modèles de nommage. Les dates affichées dans les pages suivent toujours cet appareil."
+    "timezoneHelp": "Utilisé pour les dates des titres issus des modèles de nommage. Les dates affichées dans les pages suivent toujours cet appareil.",
+    "storage": "Stockage",
+    "storageOfQuota": "{{used}} sur {{quota}}",
+    "storageNoLimit": "{{used}} utilisés, aucune limite",
+    "storageFull": "Votre stockage est plein. Les envois et les nouveaux enregistrements sont refusés jusqu'à ce que vous supprimiez des enregistrements ou leur audio.",
+    "storageHelp": "Compte l'audio et la vidéo que vous conservez. Les enregistrements dont l'audio a été supprimé ne comptent pas."
   },
   "accountTabs": {
     "about": "À Propos",
@@ -428,7 +433,12 @@
         "transcription": "Transcription"
       },
       "cacheLine": "Cache de prompts : {{reads}} tokens lus depuis le cache, {{writes}} écrits, sur cette période"
-    }
+    },
+    "storageQuota": "Quota de stockage (Mo)",
+    "storageQuotaPlaceholder": "Aucune limite",
+    "storageQuotaNewPlaceholder": "Valeur par défaut des paramètres système",
+    "storageQuotaHelp": "Les envois qui dépasseraient le quota sont refusés. Les enregistrements dont l'audio a été supprimé ne comptent pas. Laissez vide pour aucune limite.",
+    "storageUsedLabel": "Stockage utilisé"
   },
   "apiTokens": {
     "activeTokens": "Jetons actifs",
@@ -917,7 +927,8 @@
     "uploadFailedWithStatus": "Échec de l’envoi avec le statut {{status}}",
     "uploadTimedOut": "Délai d’envoi dépassé",
     "validationError": "Erreur de validation",
-    "waitAndRetryGuidance": "Patientez quelques minutes et réessayez"
+    "waitAndRetryGuidance": "Patientez quelques minutes et réessayez",
+    "shareTarget_storage_quota": "Le fichier partagé n'a pas été enregistré, car votre stockage est plein."
   },
   "eventExtraction": {
     "description": "Lorsqu'activé, l'IA identifiera les réunions, rendez-vous et échéances mentionnés dans vos enregistrements et créera des événements de calendrier téléchargeables.",
@@ -1589,7 +1600,8 @@
     "dismiss": "Masquer",
     "empty": "Rien ne requiert votre attention.",
     "view": "Afficher",
-    "voiceEmbeddingChanged": "Le service de transcription renvoie des empreintes vocales d’un autre modèle. Les profils vocaux sont conservés séparément pour chaque modèle : ceux du modèle précédent ne correspondront pas aux nouveaux enregistrements et reviennent si vous rétablissez le backend précédent, et ceux du nouveau modèle se construisent à mesure que vous nommez les intervenants."
+    "voiceEmbeddingChanged": "Le service de transcription renvoie des empreintes vocales d’un autre modèle. Les profils vocaux sont conservés séparément pour chaque modèle : ceux du modèle précédent ne correspondront pas aux nouveaux enregistrements et reviennent si vous rétablissez le backend précédent, et ceux du nouveau modèle se construisent à mesure que vous nommez les intervenants.",
+    "storageQuotaReached": "{{filename}} a été laissé dans le dossier surveillé, car votre stockage est plein ({{used_mb}} Mo sur {{quota_mb}} Mo). Il sera ajouté dès qu'il y aura de la place."
   },
   "preferences": {
     "description": "Préférences d'affichage et de comportement de l'éditeur. Ces paramètres sont enregistrés sur votre compte et s'appliquent à tous les appareils.",
@@ -2249,5 +2261,11 @@
     "secretBannerTitle": "Copiez ce secret maintenant — il ne sera plus affiché",
     "secretBannerHint": "Signez chaque requête du récepteur : HMAC-SHA256 du corps brut avec ce secret. En-tête : Speakr-Signature: sha256=<hex>",
     "copy": "Copier"
+  },
+  "storageQuota": {
+    "title": "Stockage plein",
+    "guidance": "Supprimez des enregistrements ou leur audio, ou demandez un quota plus grand à un administrateur.",
+    "uploadRefused": "Ce fichier ne tient pas dans votre stockage : {{used}} sur {{quota}} utilisés, et le fichier fait {{file}}.",
+    "recordingBlocked": "Votre stockage est plein ({{used}} sur {{quota}}). Supprimez des enregistrements ou leur audio avant d'enregistrer à nouveau."
   }
 }

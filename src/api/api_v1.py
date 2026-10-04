@@ -321,7 +321,7 @@ OPENAPI_SPEC = {
             "get": {
                 "tags": ["Users"],
                 "summary": "Get current user profile",
-                "description": "Returns the authenticated user's profile (id, username, email, name, role flags, preferences) and group memberships.",
+                "description": "Returns the authenticated user's profile (id, username, email, name, role flags, preferences), group memberships, and storage (used_bytes, quota_bytes, available_bytes; quota_bytes is null when there is no quota).",
                 "responses": {"200": {"description": "User profile object"}}
             }
         },
@@ -482,7 +482,7 @@ OPENAPI_SPEC = {
                         }
                     }
                 },
-                "responses": {"202": {"description": "Upload accepted and queued"}}
+                "responses": {"202": {"description": "Upload accepted and queued"}, "507": {"description": "The upload would exceed the user's storage quota (code storage_quota_exceeded, with used_bytes, quota_bytes and file_bytes)"}}
             }
         },
         "/integrations/asr-voice-recorder/upload": {
@@ -918,6 +918,7 @@ def get_current_token():
 # ships; a missing key means false.
 CAPABILITY_FEATURES = {
     'token_scopes': True,
+    'storage_quota': True,
     'changes_feed': True,
     'etags': True,
     'webhook_signature_v2': True,
@@ -1005,7 +1006,17 @@ def get_current_user():
             'diarize': _effective_diarize(),
         },
         'group_memberships': memberships,
+        # Storage used and the quota, NULL when there is none (#413). An upload
+        # over the quota is refused with 507 and code storage_quota_exceeded.
+        'storage': _storage_usage_for_api(current_user),
     })
+
+
+def _storage_usage_for_api(user):
+    from src.services.storage_quota import usage
+    u = usage(user)
+    return {'used_bytes': u['used_bytes'], 'quota_bytes': u['quota_bytes'],
+            'available_bytes': u['available_bytes']}
 
 
 # =============================================================================

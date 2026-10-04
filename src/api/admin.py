@@ -19,6 +19,7 @@ from src.services.retention import is_recording_exempt_from_deletion, get_retent
 from src.services.embeddings import EMBEDDINGS_AVAILABLE, process_recording_chunks
 from src.services.token_tracking import token_tracker
 from src.services.transcription_tracking import transcription_tracker
+from src.services.storage_quota import default_quota_mb
 from src.config.startup import get_file_monitor_functions
 
 # Create blueprint
@@ -174,6 +175,7 @@ def admin_get_users():
             'can_share_publicly': user.can_share_publicly,
             'recordings_count': recordings_count,
             'storage_used': storage_used,
+            'storage_quota_mb': user.storage_quota_mb,
             'monthly_token_budget': user.monthly_token_budget,
             'current_token_usage': current_usage,
             'token_usage_percentage': round(usage_percentage, 1),
@@ -213,6 +215,11 @@ def admin_add_user():
     if User.find_by_email(email):
         return jsonify({'error': 'Email already exists'}), 400
 
+    try:
+        storage_quota = _quota_mb(data['storage_quota_mb']) if 'storage_quota_mb' in data else default_quota_mb()
+    except (TypeError, ValueError):
+        return jsonify({'error': 'The storage quota must be a positive number of MB.'}), 400
+
     # Create new user
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = User(
@@ -221,7 +228,8 @@ def admin_add_user():
         password=hashed_password,
         is_admin=data.get('is_admin', False),
         monthly_token_budget=data.get('monthly_token_budget'),
-        monthly_transcription_budget=data.get('monthly_transcription_budget')
+        monthly_transcription_budget=data.get('monthly_transcription_budget'),
+        storage_quota_mb=storage_quota,
     )
 
     db.session.add(new_user)
@@ -234,6 +242,7 @@ def admin_add_user():
         'is_admin': new_user.is_admin,
         'recordings_count': 0,
         'storage_used': 0,
+        'storage_quota_mb': new_user.storage_quota_mb,
         'monthly_token_budget': new_user.monthly_token_budget,
         'current_token_usage': 0,
         'token_usage_percentage': 0,
@@ -309,6 +318,12 @@ def admin_update_user(user_id):
         else:
             user.monthly_transcription_budget = int(budget)
 
+    if 'storage_quota_mb' in data:
+        try:
+            user.storage_quota_mb = _quota_mb(data['storage_quota_mb'])
+        except (TypeError, ValueError):
+            return jsonify({'error': 'The storage quota must be a positive number of MB.'}), 400
+
     db.session.commit()
 
     # Get recordings count and storage used
@@ -331,6 +346,7 @@ def admin_update_user(user_id):
         'can_share_publicly': user.can_share_publicly,
         'recordings_count': recordings_count,
         'storage_used': storage_used,
+        'storage_quota_mb': user.storage_quota_mb,
         'monthly_token_budget': user.monthly_token_budget,
         'current_token_usage': current_usage,
         'token_usage_percentage': round(usage_percentage, 1),
@@ -418,6 +434,16 @@ def admin_toggle_admin(user_id):
 
     return jsonify({'success': True, 'is_admin': user.is_admin})
 
+
+
+def _quota_mb(value):
+    """A storage quota from the admin form: a positive number of MB, or no limit."""
+    if value in (None, '', 0, '0'):
+        return None
+    value = int(value)
+    if value < 0:
+        raise ValueError('storage_quota_mb must be positive')
+    return value
 
 
 @admin_bp.route('/admin/stats', methods=['GET'])

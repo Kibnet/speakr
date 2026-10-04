@@ -248,9 +248,16 @@ Returns the authenticated user's profile, preferences, and group memberships. Us
       "role": "admin",
       "joined_at": "2024-01-10T08:00:00Z"
     }
-  ]
+  ],
+  "storage": {
+    "used_bytes": 244862976,
+    "quota_bytes": 314572800,
+    "available_bytes": 69709824
+  }
 }
 ```
+
+`storage.quota_bytes` and `storage.available_bytes` are `null` when the user has no storage quota.
 
 ---
 
@@ -314,6 +321,21 @@ The meeting date is chosen in this order: `meeting_date`, a date in the file nam
 ```
 
 `ignored` lists the tags and folder the upload dropped because you cannot use them.
+
+An upload that would go over the user's storage quota is refused with `507 Insufficient Storage`:
+
+```json
+{
+  "error": "This upload would exceed your storage quota: 233.5 MB of 300.0 MB used, and the file is 80.0 MB.",
+  "code": "storage_quota_exceeded",
+  "used_bytes": 244862976,
+  "quota_bytes": 314572800,
+  "file_bytes": 83886080,
+  "available_bytes": 69709824
+}
+```
+
+`GET /api/v1/users/me` reports the same figures under `storage`, and `/api/v1/capabilities` lists `storage_quota`.
 
 **Example:**
 

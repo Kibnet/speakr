@@ -390,6 +390,14 @@ def create_session():
             'quota_bytes': _max_bytes_per_user(),
         }), 507  # Insufficient Storage
 
+    # Storage quota (#413). A sliced upload must fit. A recording can start
+    # only below the quota, and is then accepted whatever its length.
+    from src.services.storage_quota import check_room, StorageQuotaExceeded
+    try:
+        check_room(current_user, total_bytes or 0)
+    except StorageQuotaExceeded as quota_error:
+        return quota_error.response()
+
     session = RecordingSession(
         user_id=current_user.id,
         mime_type=mime_type,

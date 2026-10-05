@@ -657,13 +657,18 @@ export function useTranscription(state, utils) {
         return keyMap.get(segment);
     };
     const editAsrSpeaker = (index, value) => selectSpeaker(index, value);
+    const asrSpeakerOptions = Vue.computed(() => [...new Set([
+        ...availableSpeakers.value,
+        ...editingSegments.value.map(segment => segment.speaker),
+        ...(workplace.splitPreview.value?.parts.map(part => part.speaker) || [])
+    ].filter(name => typeof name === 'string' && name.trim()))].sort());
 
     return {
         ...spectrum,
         ...segmentAsr,
         ...workplace,
         confirmAsrSplit, cancelAsrSplit: () => { workplace.splitPreview.value = null; },
-        asrSegmentKey, editAsrSpeaker,
+        asrSegmentKey, editAsrSpeaker, asrSpeakerOptions,
         // Text editor
         openTranscriptionEditor,
         openTextEditorModal,

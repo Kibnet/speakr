@@ -44,6 +44,23 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe('ASR split interaction', () => {
+    it('offers existing and new draft names without changing saved transcription', () => {
+        const before = state.selectedRecording.value.transcription;
+        editor.editAsrSpeaker(1, 'Вера');
+        expect(editor.asrSpeakerOptions.value).toEqual(['Анна', 'Борис', 'Вера']);
+        state.editingSegments.value[0].speaker = '  ';
+        expect(editor.asrSpeakerOptions.value).toEqual(['Анна', 'Борис', 'Вера']);
+        expect(state.selectedRecording.value.transcription).toBe(before);
+    });
+
+    it('offers a new speaker in both split fields before confirmation', async () => {
+        editor.captureSplitSelection(0, event(source().sentence, 8));
+        await editor.splitSegmentAtCursor(0);
+        editor.splitPreview.value.parts[1].speaker = 'Вера';
+        expect(editor.asrSpeakerOptions.value).toEqual(['Анна', 'Борис', 'Вера']);
+        expect(state.editingSegments.value).toHaveLength(2);
+    });
+
     it('captures caret, inserts adjacent parts, closes dropdown and focuses the second speaker', async () => {
         const neighbour = state.editingSegments.value[1];
         state.openAsrDropdownIndex.value = 1;

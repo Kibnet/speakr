@@ -35,6 +35,7 @@ node scripts/screenshots/asr-editor-demo.mjs --without-segmenter
 SPEAKR_REDUCED_MOTION=1 node scripts/screenshots/asr-workplace-smoke.mjs
 node scripts/screenshots/asr-spectrum-zoom-smoke.mjs
 node scripts/screenshots/asr-spectrum-zoom-edges.mjs
+node scripts/screenshots/asr-speaker-picker-smoke.mjs
 ```
 
 The demo checks playback, zoom boundaries, cached pan/Fit, marker-based splitting
@@ -43,6 +44,10 @@ bootstrap and verifies editing and saving. Workplace tests cover draft/save race
 speaker tools, recognition proposals, boundary expansion and mobile layout. Zoom
 tests also cover long/fractional segments, tiny intervals, end-of-file clipping,
 failed Fit retry, cancellation and late lease release.
+Speaker picker tests cover opening a populated name without filtering away other
+speakers, mouse/keyboard selection, free names, both split fields, saved speaker
+links, metadata preservation, reopen and 320px layout. Use `--baseline` against
+the pre-fix checkout to record the failing keyboard scenario.
 
 JSON results, screenshots and finalized WebM videos go under `output/playwright/`.
 Review artifacts before publishing. Reduced motion is a browser test setting;

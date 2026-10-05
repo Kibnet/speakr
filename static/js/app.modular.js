@@ -19,6 +19,7 @@ import { useVirtualScroll, getVirtualItemKey } from './modules/composables/virtu
 import { useBulkSelection } from './modules/composables/bulk-selection.js';
 import { useBulkOperations } from './modules/composables/bulk-operations.js';
 import { useFolders } from './modules/composables/folders.js';
+import { AsrSpeakerInput } from './modules/components/asr-speaker-input.js';
 
 // Import utilities
 import { showToast } from './modules/utils/toast.js';
@@ -4567,5 +4568,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return window.i18n.tc(key, count, params);
     });
 
+    app.component('asr-speaker-input', AsrSpeakerInput);
     app.mount('#app');
 });

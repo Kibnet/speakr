@@ -48,9 +48,13 @@ For standard transcriptions without speaker diarization, click the Edit button i
 
 For transcriptions processed with [ASR](../features.md#speaker-diarization) and speaker diarization, Speakr offers a powerful segment-based editor that preserves the structure and timing of your transcription. If you encounter issues with speaker identification, see [troubleshooting](../troubleshooting.md#speaker-identification-not-working).
 
-![ASR Transcription Editor](../assets/images/screenshots/edit-transcript-modal.png)
+![Speaker assignment in the shared workspace](../assets/images/screenshots/transcript-workspace-speakers.png)
 
-The ASR editor is a workspace with a segment list and a detailed panel for the selected utterance. One audio player serves the whole editor. On narrow screens, use the segment picker above the detail panel. For each segment, you can:
+**Identify Speakers** and **Edit Transcript** open the same workspace for JSON transcriptions. Speaker mode keeps the speaker panel on the left and full utterances in the central list. Each utterance has its original segment number and start–end time range. Click its edit action to hide the speaker panel and open that segment's ASR tools on the right. **Back to speakers** restores speaker mode while keeping your draft, selection and filter. After splitting a filtered utterance, both parts stay visible so you can assign different speakers.
+
+![Segment tools beside the shared transcript](../assets/images/screenshots/transcript-workspace-editor.png)
+
+Both modes use one draft and one save, including speaker names and transcript changes. Existing speaker sorting, short-speaker merging, saved-name search, voice suggestions, **Me** and conversation-based identification remain available. Conversation identification uses your current draft. One audio or video player serves both modes. On narrow screens, tabs switch between speakers, transcript and segment tools. For each segment, you can:
 
 **Edit Speaker Names**: Each segment shows who is speaking. You can click on any speaker field to change it, with an intelligent dropdown that suggests speakers from your saved speaker database. As you type, the system filters suggestions to help you quickly find the right speaker. This is particularly useful for correcting misidentified speakers or standardizing speaker names across the transcription.
 

@@ -131,3 +131,23 @@ template duplicates in this app — always use the visibility-filtering helpers.
 Content on screen comes from the dev instance's data; pick recordings whose
 titles/content look presentable (see existing captions in docs/screenshots.md
 for the intent of each image).
+
+## Spectrogram frequency preference and axis regression
+
+Run the synthetic-only `asr-editor-fixture.py` in a disposable container with
+`ASR_SPLIT_SMOKE=1`, mapping its port8899 to localhost8921. It uses a temporary
+database and synthetic WAV files; do not mount a production database or upload directory.
+
+```powershell
+$env:SPEAKR_URL = 'http://127.0.0.1:8921'
+node scripts/screenshots/asr-spectrum-frequency-ui.mjs
+```
+
+Set `SPEAKR_PLAYWRIGHT_MODULE` and `SPEAKR_CHROMIUM_PATH` if using a bundled
+Playwright/runtime. `--before` is a baseline reproduction against the version
+before this fix: it expects the4kHz choice to reset on modal reopen and reload.
+The current run checks modal/segment/recording transitions, page reload, native
+keyboard selection, actual low-rate mono caps, stereo full-range22.05kHz on a
+320px screen, light/dark layouts, zoom/Fit/pan/marker and play/pause. All transcript
+write requests are blocked and asserted absent. Finalized videos, PNGs and JSON
+results stay local in `output/playwright/spectrum-frequency-ui/`.

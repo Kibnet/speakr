@@ -4,6 +4,8 @@ import { validSegmentRange, spectrogramWindow, plotTime, markerPercent, stripGeo
 const COMPRESSED_LIMIT = 64 * 1024 * 1024;
 const DECODED_LIMIT = 16 * 1024 * 1024;
 const TILE_LIMIT = 8 * 1024 * 1024;
+const FREQUENCY_KEY = 'speakrSpectrogramFrequency';
+const FREQUENCIES = ['2000','4000','8000','full'];
 const errorCodes = ['bounds', 'busy', 'media', 'channels', 'frequency', 'timeout', 'missing', 'remote',
     'changed', 'forbidden', 'expired', 'limit', 'cancelled'];
 
@@ -31,7 +33,10 @@ function validatedManifest(m, view, span) {
 export function useAsrSpectrogram(state, utils) {
     const { editingSegments, selectedRecording, showAsrEditorModal } = state;
     const spectrogram = Vue.ref(null);
-    let frequency = '8000', activeObject = null, requestId = 0, viewportId = 0;
+    let savedFrequency;
+    try { savedFrequency=localStorage.getItem(FREQUENCY_KEY); } catch { /* Browser preferences may be blocked. */ }
+    let frequency = FREQUENCIES.includes(savedFrequency) ? savedFrequency : '8000';
+    let activeObject = null, requestId = 0, viewportId = 0;
     let openGeneration=0;
     let retryTarget=null;
     let controller = null, tileController = null, pendingItem = null, activeItem = null;
@@ -377,8 +382,17 @@ export function useAsrSpectrogram(state, utils) {
         return view.markerError?NaN:view.marker;
     };
     const setSpectrogramFrequency = value => {
-        if(!['2000','4000','8000','full'].includes(value) || !spectrogram.value)return;
-        frequency=value;spectrogram.value.frequency=value;return load();
+        if(!FREQUENCIES.includes(value) || !spectrogram.value || value===frequency)return;
+        frequency=value;spectrogram.value.frequency=value;
+        try { localStorage.setItem(FREQUENCY_KEY,value); } catch { /* Keep the in-memory choice when storage is unavailable. */ }
+        return load();
+    };
+    const spectrogramFrequencyLabel = () => {
+        const view=spectrogram.value;
+        if(!view)return '';
+        // Label the displayed image, whose actual Nyquist limit can be below the requested range.
+        if(view.representation)return `${Number((view.maxFrequency/1000).toFixed(2))} kHz`;
+        return view.frequency==='full' ? '…' : `${Number(view.frequency)/1000} kHz`;
     };
     const setSpectrogramMarker = value => {
         const view=spectrogram.value;if(!view)return;
@@ -478,7 +492,7 @@ export function useAsrSpectrogram(state, utils) {
         try{await element.play();}catch{clearPlayback();utils.showToast(window.i18n?.t('asrSpectrogram.error_media') || 'Audio unavailable','fa-info-circle');}
     };
     if(Vue.watch) {
-        Vue.watch(()=>JSON.stringify([showAsrEditorModal.value,selectedRecording.value?.id,selectedRecording.value?.audio_path,selectedRecording.value?.audio_ready,selectedRecording.value?.audio_deleted_at]),()=>{frequency='8000';closeSpectrogram();});
+        Vue.watch(()=>JSON.stringify([showAsrEditorModal.value,selectedRecording.value?.id,selectedRecording.value?.audio_path,selectedRecording.value?.audio_ready,selectedRecording.value?.audio_deleted_at]),()=>{closeSpectrogram();});
         Vue.watch(()=>[spectrogram.value && activeObject && editingSegments.value.includes(activeObject),activeObject?.start_time,activeObject?.end_time,activeObject?.speaker],()=>{
             if(!activeObject || !spectrogram.value)return;
             if(!editingSegments.value.includes(activeObject)){closeSpectrogram();return;}
@@ -489,7 +503,7 @@ export function useAsrSpectrogram(state, utils) {
         });
     }
     return {spectrogram,canShowSpectrogram,openSpectrogram,closeSpectrogram,retrySpectrogram,
-        cancelSpectrogramPreparation:()=>{retryTarget=null;cancel();if(spectrogram.value){spectrogram.value.requestedSpan=spectrogram.value.span;spectrogram.value.loading=false;spectrogram.value.error='cancelled';}},setSpectrogramFrequency,
+        cancelSpectrogramPreparation:()=>{retryTarget=null;cancel();if(spectrogram.value){spectrogram.value.requestedSpan=spectrogram.value.span;spectrogram.value.loading=false;spectrogram.value.error='cancelled';}},setSpectrogramFrequency,spectrogramFrequencyLabel,
         spectrogramBoundary,setSpectrogramMarker,resetSpectrogramMarker,clickSpectrogram,adjustSpectrogramMarker,
         spectrogramMarkerPercent,spectrogramPlayheadPercent,spectrogramContextPercent,navigateSpectrogram,canZoomSpectrogram,canFitSpectrogram,fitSpectrogram,playSpectrogram,
         releaseSpectrogramPlayback:clearPlayback,spectrogramTiles:()=>spectrogram.value?.tiles || [],spectrogramStripStyle,

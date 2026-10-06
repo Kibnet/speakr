@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { useAsrSpectrogram } from './asrSpectrogram.js';
-let state, spectrum, watchers, audio, manifests, serial, lifecycle, pageLifecycle;
+let state, spectrum, watchers, audio, manifests, serial, lifecycle, pageLifecycle, storedFrequency;
 const ref = value => ({value});
 const tileBlob = (width=1024,height=384,size=24) => {
     const bytes=new Uint8Array(size);bytes.set([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82]);
@@ -72,6 +72,8 @@ it('explicit cancellation clears a failed fit retry intent',async()=>{
 });
 beforeEach(() => {
     watchers=[];manifests=new Map();serial=0;lifecycle=new Map();pageLifecycle=new Map();
+    storedFrequency=null;
+    vi.stubGlobal('localStorage',{getItem:vi.fn(()=>storedFrequency),setItem:vi.fn((key,value)=>{storedFrequency=value;})});
     vi.stubGlobal('Vue',{ref,watch:(source,cb)=>watchers.push(cb)});
     vi.spyOn(URL,'createObjectURL').mockReturnValue('blob:spectrum');
     vi.spyOn(URL,'revokeObjectURL').mockImplementation(()=>{});
@@ -113,6 +115,54 @@ it('uses the actual EOF range for full fit and guards an already fitted tiny seg
 });
 afterEach(async()=>{await spectrum.closeSpectrogram();vi.restoreAllMocks();vi.unstubAllGlobals();});
 
+it.each(['2000','4000','8000','full'])('restores valid browser frequency %s on a fresh session',async frequency=>{
+    storedFrequency=frequency;spectrum=useAsrSpectrogram(state,{nextTick:async()=>{}});
+    await spectrum.openSpectrogram(0);expect(spectrum.spectrogram.value.frequency).toBe(frequency);
+    expect(JSON.parse(prepares().at(-1)[1].body).frequency).toBe(frequency);
+});
+it.each([null,'garbage','16000','', '4000.0'])('ignores invalid stored frequency %s',async value=>{
+    storedFrequency=value;spectrum=useAsrSpectrogram(state,{nextTick:async()=>{}});
+    await spectrum.openSpectrogram(0);expect(spectrum.spectrogram.value.frequency).toBe('8000');
+});
+it('keeps the in-memory choice through lifecycle resets when storage is unavailable',async()=>{
+    localStorage.getItem.mockImplementation(()=>{throw new Error('blocked');});
+    localStorage.setItem.mockImplementation(()=>{throw new Error('quota');});
+    const firstWatcher=watchers.length;spectrum=useAsrSpectrogram(state,{nextTick:async()=>{}});
+    await spectrum.openSpectrogram(0);expect(spectrum.spectrogram.value.frequency).toBe('8000');
+    await spectrum.setSpectrogramFrequency('4000');
+    for(const change of [()=>{state.showAsrEditorModal.value=false;},()=>{state.selectedRecording.value={id:10,audio_path:'/next.wav'};},()=>{state.selectedRecording.value.audio_path='/changed.wav';}]){
+        change();await watchers[firstWatcher]();state.showAsrEditorModal.value=true;
+        await spectrum.openSpectrogram(0);expect(spectrum.spectrogram.value.frequency).toBe('4000');
+    }
+});
+it('persists explicit choices, restores them after recreation and ignores repeated/invalid choices',async()=>{
+    await spectrum.openSpectrogram(0);await spectrum.setSpectrogramFrequency('4000');
+    expect(localStorage.setItem).toHaveBeenCalledWith('speakrSpectrogramFrequency','4000');
+    const count=prepares().length;await spectrum.setSpectrogramFrequency('4000');await spectrum.setSpectrogramFrequency('nope');
+    expect(prepares()).toHaveLength(count);expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+    await spectrum.closeSpectrogram();spectrum=useAsrSpectrogram(state,{nextTick:async()=>{}});
+    await spectrum.openSpectrogram(1);expect(spectrum.spectrogram.value.frequency).toBe('4000');
+});
+it('labels the actual low-rate cap while retaining the requested browser range',async()=>{
+    fetch.mockImplementation((url,options)=>{
+        if(url.endsWith('/prepare')){const b=JSON.parse(options.body);const result=ready(b.start,b.end,b.span,b.frequency);result.manifest.maxFrequency=4000;return json(result);}
+        return serve(url,options);
+    });
+    await spectrum.openSpectrogram(0);
+    expect(spectrum.spectrogram.value.frequency).toBe('8000');expect(spectrum.spectrogramFrequencyLabel()).toBe('4 kHz');
+    await spectrum.setSpectrogramFrequency('full');
+    expect(spectrum.spectrogramFrequencyLabel()).toBe('4 kHz');expect(storedFrequency).toBe('full');
+});
+it('keeps the displayed-image axis and the new preference when preparation fails',async()=>{
+    await spectrum.openSpectrogram(0);
+    fetch.mockImplementation((url,options)=>url.endsWith('/prepare')?Promise.resolve({ok:false,status:503,json:async()=>({code:'timeout'})}):serve(url,options));
+    await spectrum.setSpectrogramFrequency('4000');
+    expect(spectrum.spectrogramFrequencyLabel()).toBe('8 kHz');expect(storedFrequency).toBe('4000');
+    expect(spectrum.spectrogram.value.error).toBe('timeout');
+    fetch.mockImplementation(serve);await spectrum.closeSpectrogram();await spectrum.openSpectrogram(1);
+    expect(spectrum.spectrogram.value.frequency).toBe('4000');expect(spectrum.spectrogramFrequencyLabel()).toBe('4 kHz');
+});
+
 it('frequency changes preserve marker/window and cache windows separately',async()=>{
     await spectrum.openSpectrogram(0);spectrum.setSpectrogramMarker(14);const range={...spectrum.spectrogram.value.window};
     await spectrum.setSpectrogramFrequency('4000');expect(spectrum.spectrogram.value.maxFrequency).toBe(4000);
@@ -127,6 +177,7 @@ it('late frequency result cannot overwrite a newer axis',async()=>{
     for(let i=0;i<20 && pending.length<2;i++)await Promise.resolve();
     pending[1](json(ready(10,18,8,'full')));await full;
     pending[0](json(ready(10,18,8,'4000')));await narrow;expect(spectrum.spectrogram.value.maxFrequency).toBe(24000);expect(spectrum.spectrogram.value.frequency).toBe('full');
+    expect(storedFrequency).toBe('full');expect(spectrum.spectrogramFrequencyLabel()).toBe('24 kHz');
 });
 
 it('marker is tied to object/bounds and never reused for another segment',async()=>{

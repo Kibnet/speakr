@@ -79,20 +79,25 @@ def fixture():
         return jsonify(error='Invalid disposable audio duration'), 400
     audio_path = None
     if spectral:
-        frames = round(spectral_duration * 16000)
-        audio_path = str(fixture_dir / 'uploads' / f'spectral-fixture-{frames}.wav')
+        sample_rate = options.get('audio_sample_rate', 16000)
+        channels = options.get('audio_channels', 2)
+        if sample_rate not in (8000, 16000, 44100, 48000) or channels not in (1, 2):
+            return jsonify(error='Invalid disposable audio format'), 400
+        frames = round(spectral_duration * sample_rate)
+        format_suffix = '' if (sample_rate, channels) == (16000, 2) else f'-{sample_rate}-{channels}'
+        audio_path = str(fixture_dir / 'uploads' / f'spectral-fixture-{frames}{format_suffix}.wav')
         Path(audio_path).parent.mkdir(parents=True, exist_ok=True)
         if not Path(audio_path).exists():
             period = bytearray()
-            for i in range(160000):
-                t = i / 16000
+            for i in range(sample_rate * 10):
+                t = i / sample_rate
                 frequency = 400 if t < 3 else 1200 if 4 <= t < 8 else 0
                 amplitude = int(16000 * math.sin(2 * math.pi * frequency * t)) if frequency else 0
-                period += struct.pack('<hh', amplitude, -amplitude)
+                period += struct.pack('<hh', amplitude, -amplitude) if channels == 2 else struct.pack('<h', amplitude)
             with wave.open(audio_path, 'wb') as file:
-                file.setnchannels(2); file.setsampwidth(2); file.setframerate(16000)
-                for offset in range(0, frames, 160000):
-                    file.writeframes(period[:min(160000, frames-offset)*4])
+                file.setnchannels(channels); file.setsampwidth(2); file.setframerate(sample_rate)
+                for offset in range(0, frames, sample_rate * 10):
+                    file.writeframes(period[:min(sample_rate * 10, frames-offset)*2*channels])
         if options.get('long'):
             segments[150]['end_time'] = 1640
         if options.get('video'):

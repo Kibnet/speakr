@@ -2418,5 +2418,15 @@
     "deleteHint": "Segment aus dem Entwurf löschen? Änderungen lassen sich vor dem Speichern verwerfen.",
     "proposalDiscarded": "Nicht übernommener ASR-Vorschlag verworfen",
     "removeSpeaker": "Sprecher entfernen"
+  },
+  "transcriptWorkspace": {
+    "title": "Transkript und Sprecher",
+    "editor": "Editor",
+    "back": "← Sprecher",
+    "splitPinned": "Beide Teile bleiben in der Liste sichtbar.",
+    "resumeSpeaker": "Sprecherfilter fortsetzen",
+    "followUpFailed": "Transkript gespeichert. Einige Folgeschritte sind fehlgeschlagen.",
+    "followUpUnknown": "Transkript gespeichert. Der Status der Folgeschritte konnte nicht bestätigt werden.",
+    "retrySummary": "Zusammenfassung erneut erstellen"
   }
 }

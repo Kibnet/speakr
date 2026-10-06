@@ -2418,5 +2418,15 @@
     "deleteHint": "从草稿中删除此片段？保存前可以放弃更改。",
     "proposalDiscarded": "未应用的识别结果已放弃",
     "removeSpeaker": "删除说话人"
+  },
+  "transcriptWorkspace": {
+    "title": "转写和说话人",
+    "editor": "编辑器",
+    "back": "← 说话人",
+    "splitPinned": "拆分后的两部分仍显示在列表中。",
+    "resumeSpeaker": "恢复说话人筛选",
+    "followUpFailed": "转写已保存。部分后续处理失败。",
+    "followUpUnknown": "转写已保存。无法确认后续处理的状态。",
+    "retrySummary": "重新生成摘要"
   }
 }

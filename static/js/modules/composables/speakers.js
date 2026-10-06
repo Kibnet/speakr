@@ -67,6 +67,9 @@ export function useSpeakers(state, utils, processedTranscription) {
     // the per-line edits.
     const openSpeakerModal = () => {
         if (!selectedRecording.value) return;
+        try {
+            if (utils.workspace && Array.isArray(JSON.parse(selectedRecording.value.transcription))) return utils.openWorkspace('speakers');
+        } catch { /* Plain text keeps its existing labeling screen. */ }
 
         // Pause outer audio player to avoid conflicts with modal's player
         pauseOuterAudioPlayer();
@@ -164,6 +167,7 @@ export function useSpeakers(state, utils, processedTranscription) {
     };
 
     const closeSpeakerModal = () => {
+        if (utils.workspace?.active()) return utils.closeWorkspace();
         // The modal composable pauses its player when showSpeakerModal turns
         // false. Reset modal audio state (keep main player independent)
         if (utils.resetModalAudioState) {
@@ -301,7 +305,19 @@ export function useSpeakers(state, utils, processedTranscription) {
     };
 
     const saveSpeakerNames = async () => {
+        if (utils.workspace?.active()) return utils.saveWorkspace(false);
         if (!selectedRecording.value) return;
+        if (selectedRecording.value.incognito) {
+            let content = selectedRecording.value.transcription || '';
+            for (const [label, info] of Object.entries(speakerMap.value)) {
+                const name = info.name?.trim() || (info.isMe ? currentUserName.value || 'Me' : '');
+                if (!name) continue;
+                const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                content = content.replace(new RegExp(`\\[\\s*${escaped}\\s*\\]`, 'gi'), () => `[${name}]`);
+            }
+            if (await utils.persistLocalTranscript(content)) closeSpeakerModal();
+            return;
+        }
 
         // If there are transcript edits, save those instead
         if (editedTranscriptData.value) {
@@ -396,7 +412,8 @@ export function useSpeakers(state, utils, processedTranscription) {
 
                 // Update selectedRecording with new object reference for reactivity
                 if (selectedRecording.value && selectedRecording.value.id === recordingId) {
-                    selectedRecording.value = {
+                    if (utils.workspace?.active()) Object.assign(selectedRecording.value, {status:statusData.status});
+                    else selectedRecording.value = {
                         ...selectedRecording.value,
                         status: statusData.status
                     };
@@ -419,7 +436,8 @@ export function useSpeakers(state, utils, processedTranscription) {
 
                         // Always update selectedRecording if it's the current recording
                         if (selectedRecording.value && selectedRecording.value.id === recordingId) {
-                            selectedRecording.value = fullData;
+                            if (utils.workspace?.active()) Object.assign(selectedRecording.value, fullData);
+                            else selectedRecording.value = fullData;
                             // Force Vue to detect the change
                             await nextTick();
                         }
@@ -450,6 +468,9 @@ export function useSpeakers(state, utils, processedTranscription) {
 
     const loadVoiceSuggestions = async () => {
         if (!selectedRecording.value?.id) return;
+        if (selectedRecording.value.incognito) return;
+        const workspaceToken = utils.workspace?.active() ? utils.workspace.llmSnapshot() : null;
+        const recordingId = selectedRecording.value.id;
 
         loadingVoiceSuggestions.value = true;
         voiceSuggestions.value = {};
@@ -460,6 +481,8 @@ export function useSpeakers(state, utils, processedTranscription) {
 
             const data = await response.json();
 
+            if (recordingId !== selectedRecording.value?.id || (workspaceToken && !utils.workspace.llmSessionCurrent(workspaceToken))) return;
+
             if (data.success && data.suggestions) {
                 // Only keep suggestions that have matches
                 voiceSuggestions.value = Object.fromEntries(
@@ -468,13 +491,14 @@ export function useSpeakers(state, utils, processedTranscription) {
             }
         } catch (error) {
             console.error('Error loading voice suggestions:', error);
-            voiceSuggestions.value = {};
+            if (recordingId === selectedRecording.value?.id && (!workspaceToken || utils.workspace.llmSessionCurrent(workspaceToken))) voiceSuggestions.value = {};
         } finally {
-            loadingVoiceSuggestions.value = false;
+            if (recordingId === selectedRecording.value?.id && (!workspaceToken || utils.workspace.llmSessionCurrent(workspaceToken))) loadingVoiceSuggestions.value = false;
         }
     };
 
     const applyVoiceSuggestion = (speakerId, suggestion) => {
+        if (utils.workspace?.active() && utils.canEditAsrDraft?.() === false) return;
         if (speakerMap.value[speakerId]) {
             speakerMap.value[speakerId].name = suggestion.name;
             // Don't delete the suggestion - let it reappear if user clears the field
@@ -483,6 +507,7 @@ export function useSpeakers(state, utils, processedTranscription) {
 
     // Handle "This is Me" checkbox changes
     const handleIsMeChange = (speakerId) => {
+        if (utils.workspace?.active() && utils.canEditAsrDraft?.() === false) return;
         if (!speakerMap.value[speakerId]) return;
 
         if (speakerMap.value[speakerId].isMe) {
@@ -522,6 +547,9 @@ export function useSpeakers(state, utils, processedTranscription) {
      */
     const autoIdentifySpeakers = async (identifyAll = false) => {
         showAutoIdDropdown.value = false;
+        if (selectedRecording.value?.incognito) return;
+        if (utils.workspace?.active() && (selectedRecording.value.incognito || utils.canEditAsrDraft?.() === false)) return;
+        const workspaceToken = utils.workspace?.active() ? utils.workspace.llmSnapshot() : null;
 
         if (!selectedRecording.value) {
             showToast(t('help.noRecordingSelected'), 'fa-exclamation-circle');
@@ -540,11 +568,13 @@ export function useSpeakers(state, utils, processedTranscription) {
                     'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
-                    current_speaker_map: speakerMap.value
+                    current_speaker_map: speakerMap.value,
+                    ...(workspaceToken ? utils.workspace.llmPayload() : {})
                 })
             });
 
             const data = await response.json();
+            if (workspaceToken && !utils.workspace.llmCurrent(workspaceToken)) return;
             if (!response.ok) {
                 throw new Error(data.error || 'Unknown error occurred during auto-identification.');
             }
@@ -582,7 +612,7 @@ export function useSpeakers(state, utils, processedTranscription) {
             console.error('Auto Identify Speakers Error:', error);
             showToast(`Error: ${error.message}`, 'fa-exclamation-circle', 5000, 'error');
         } finally {
-            isAutoIdentifying.value = false;
+            if (!workspaceToken || utils.workspace.llmSessionCurrent(workspaceToken)) isAutoIdentifying.value = false;
         }
     };
 
@@ -605,6 +635,7 @@ export function useSpeakers(state, utils, processedTranscription) {
 
     /** Apply the best voice match to every speaker whose name is still empty */
     const applySuggestedNames = () => {
+        if (utils.workspace?.active() && utils.canEditAsrDraft?.() === false) return;
         let appliedCount = 0;
         for (const speakerId of modalSpeakers.value) {
             const data = speakerMap.value[speakerId];
@@ -713,6 +744,7 @@ export function useSpeakers(state, utils, processedTranscription) {
 
         // Add to modalSpeakers LAST (triggers re-render, but speakerMap is already populated)
         modalSpeakers.value.push(newSpeakerId);
+        utils.workspace?.addSpeaker(newSpeakerId);
 
         closeAddSpeakerModal();
         showToast(t('help.speakerAdded'), 'fa-check-circle');
@@ -727,6 +759,7 @@ export function useSpeakers(state, utils, processedTranscription) {
         context.asr === !!state.showAsrEditorModal?.value && (!context.asr ||
             (context.draft === editingSegments.value && utils.canEditAsrDraft?.() !== false));
     const openEditSpeakersModal = async () => {
+        if (utils.workspace?.active()) return utils.workspace.back();
         const token = ++editNamesToken;
         const context = {recordingId:selectedRecording.value?.id, asr:!!state.showAsrEditorModal?.value, draft:editingSegments.value};
         editNamesContext = context;
@@ -870,6 +903,7 @@ export function useSpeakers(state, utils, processedTranscription) {
     // =========================================
 
     const openEditTextModal = (segmentIndex) => {
+        if (utils.workspace?.active()) return utils.workspace.openEditor(segmentIndex);
         if (!selectedRecording.value?.transcription) return;
 
         try {
@@ -921,6 +955,13 @@ export function useSpeakers(state, utils, processedTranscription) {
     };
 
     const changeSpeaker = (segmentIndex, newSpeakerId) => {
+        if (utils.workspace?.active()) {
+            if (utils.canEditAsrDraft?.() === false || !editingSegments.value[segmentIndex]) return;
+            editingSegments.value[segmentIndex].speaker = newSpeakerId;
+            delete editingSegments.value[segmentIndex].speaker_id;
+            editingSpeakerIndex.value = null;
+            return;
+        }
         if (!selectedRecording.value?.transcription) return;
 
         try {
@@ -954,6 +995,8 @@ export function useSpeakers(state, utils, processedTranscription) {
     };
 
     return {
+        getSpeakerColor,
+        pollForSummaryCompletion,
         // Speaker modal
         openSpeakerModal,
         closeSpeakerModal,

@@ -2418,5 +2418,15 @@
     "deleteHint": "Delete this segment from the draft? You can cancel before saving.",
     "proposalDiscarded": "Unapplied ASR proposal discarded",
     "removeSpeaker": "Remove speaker"
+  },
+  "transcriptWorkspace": {
+    "title": "Transcript and speakers",
+    "editor": "Editor",
+    "back": "← Speakers",
+    "splitPinned": "Both split parts remain visible.",
+    "resumeSpeaker": "Resume speaker filter",
+    "followUpFailed": "Transcript saved. Some follow-up processing failed.",
+    "followUpUnknown": "Transcript saved. Follow-up processing could not be confirmed.",
+    "retrySummary": "Retry summary generation"
   }
 }

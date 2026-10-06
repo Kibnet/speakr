@@ -95,9 +95,19 @@ def fixture():
                     file.writeframes(period[:min(160000, frames-offset)*4])
         if options.get('long'):
             segments[150]['end_time'] = 1640
+        if options.get('video'):
+            video_path = str(Path(audio_path).with_suffix('.mp4'))
+            if not Path(video_path).exists():
+                subprocess.run(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i', 'color=black:s=320x180:r=10',
+                                '-i', audio_path, '-t', str(spectral_duration), '-c:v', 'libx264',
+                                '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-movflags', '+faststart', video_path], check=True)
+            audio_path = video_path
     recording = Recording(user_id=user.id, title='ASR split smoke fixture', status='COMPLETED',
                           audio_deleted_at=None if spectral else datetime.utcnow(), audio_path=audio_path,
                           audio_duration_seconds=spectral_duration if spectral else None,
+                          mime_type='video/mp4' if options.get('video') else 'audio/wav',
+                          speaker_embeddings=options.get('speaker_embeddings'),
+                          speaker_label_map=options.get('speaker_label_map'),
                           transcription=json.dumps(segments, ensure_ascii=False))
     db.session.add(recording)
     db.session.flush()

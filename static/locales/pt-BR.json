@@ -2418,5 +2418,15 @@
     "deleteHint": "Excluir este segmento do rascunho? Você pode descartar as alterações antes de salvar.",
     "proposalDiscarded": "Proposta de ASR não aplicada descartada",
     "removeSpeaker": "Remover falante"
+  },
+  "transcriptWorkspace": {
+    "title": "Transcrição e falantes",
+    "editor": "Editor",
+    "back": "← Falantes",
+    "splitPinned": "As duas partes permanecem visíveis na lista.",
+    "resumeSpeaker": "Retomar o filtro de falante",
+    "followUpFailed": "Transcrição salva. Parte do processamento posterior falhou.",
+    "followUpUnknown": "Transcrição salva. Não foi possível confirmar o processamento posterior.",
+    "retrySummary": "Tentar gerar o resumo novamente"
   }
 }

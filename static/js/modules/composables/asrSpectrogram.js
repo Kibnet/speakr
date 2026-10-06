@@ -40,7 +40,7 @@ export function useAsrSpectrogram(state, utils) {
     let lifecycleInstalled=false;
     const leaseReleases=new Set();
     const cache = new Map();
-    const audio = () => document.querySelector('[data-testid="asr-editor"] audio');
+    const audio = () => document.querySelector('[data-testid="asr-editor"] audio, [data-testid="asr-editor"] video');
     const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute?.('content');
     const jsonOptions = (method, body) => ({method, headers:{'Content-Type':'application/json','X-CSRFToken':csrf()}, body:JSON.stringify(body)});
     const endpoint = (view,id) => `/api/recordings/${view.recordingId}/spectrogram/preparations/${id}`;
@@ -350,7 +350,7 @@ export function useAsrSpectrogram(state, utils) {
         const generation=++openGeneration;
         if(!canShowSpectrogram(index))return;
         const segment=editingSegments.value[index],recording=selectedRecording.value;
-        const validOpening=()=>generation===openGeneration && showAsrEditorModal.value && selectedRecording.value===recording &&
+        const validOpening=()=>generation===openGeneration && showAsrEditorModal.value && selectedRecording.value?.id===recording.id && selectedRecording.value?.audio_path===recording.audio_path &&
             editingSegments.value.includes(segment) && utils.isSelectedSegment?.(segment)!==false &&
             canShowSpectrogram(editingSegments.value.indexOf(segment));
         await closeSpectrogram(false,false,true);
@@ -424,7 +424,7 @@ export function useAsrSpectrogram(state, utils) {
     const retrySpectrogram = () => {
         const target=retryTarget,view=spectrogram.value;
         if(target && target.view===view && target.segment===activeObject &&
-            target.recording===selectedRecording.value && target.audioPath===selectedRecording.value?.audio_path &&
+            target.recording?.id===selectedRecording.value?.id && target.audioPath===selectedRecording.value?.audio_path &&
             current(view,requestId)) {
             frequency=target.frequency;return load(target.span,target.center,true);
         }
@@ -478,7 +478,7 @@ export function useAsrSpectrogram(state, utils) {
         try{await element.play();}catch{clearPlayback();utils.showToast(window.i18n?.t('asrSpectrogram.error_media') || 'Audio unavailable','fa-info-circle');}
     };
     if(Vue.watch) {
-        Vue.watch(()=>[showAsrEditorModal.value,selectedRecording.value?.id,selectedRecording.value?.audio_ready,selectedRecording.value?.audio_deleted_at],()=>{frequency='8000';closeSpectrogram();});
+        Vue.watch(()=>JSON.stringify([showAsrEditorModal.value,selectedRecording.value?.id,selectedRecording.value?.audio_path,selectedRecording.value?.audio_ready,selectedRecording.value?.audio_deleted_at]),()=>{frequency='8000';closeSpectrogram();});
         Vue.watch(()=>[spectrogram.value && activeObject && editingSegments.value.includes(activeObject),activeObject?.start_time,activeObject?.end_time,activeObject?.speaker],()=>{
             if(!activeObject || !spectrogram.value)return;
             if(!editingSegments.value.includes(activeObject)){closeSpectrogram();return;}

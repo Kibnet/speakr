@@ -36,6 +36,8 @@ SPEAKR_REDUCED_MOTION=1 node scripts/screenshots/asr-workplace-smoke.mjs
 node scripts/screenshots/asr-spectrum-zoom-smoke.mjs
 node scripts/screenshots/asr-spectrum-zoom-edges.mjs
 node scripts/screenshots/asr-speaker-picker-smoke.mjs
+node scripts/screenshots/unified-workspace-smoke.mjs
+node scripts/screenshots/unified-workspace-parity.mjs
 ```
 
 The demo checks playback, zoom boundaries, cached pan/Fit, marker-based splitting
@@ -56,6 +58,23 @@ same fixture helper against an unmodified upstream checkout in a separate
 disposable container, then run
 `SPEAKR_URL=http://127.0.0.1:8912 node scripts/screenshots/asr-editor-demo.mjs --before`.
 The committed examples use synthetic tones, not recorded voices.
+
+The unified workspace scripts exercise the real application: shared drafts across
+speaker/editor modes, split/save/reopen, spectrum playback, mobile panes,
+autosave/summary acknowledgement, voice suggestions, short-speaker merging,
+transient LLM identification, segment recognition through the HTTP fixture,
+read-only/incognito flows, untimed legacy JSON and video controls. Provider
+suggestions and LLM responses are deterministic test responses; they do not prove
+model quality. `unified-workspace-smoke.mjs --baseline` captures the old separate
+interfaces. For a full-list performance comparison, run
+`unified-workspace-performance.mjs` with `SPEAKR_BASELINE_URL` and `SPEAKR_URL`
+pointing to separate disposable fixtures; it compares typing, filtering,
+scrolling, segment selection and the editor/speaker roundtrip across 1,200 long
+utterances (12 trials, two warmups, median, 20% persistent interaction budget).
+First opening is reported separately because the unified session also loads
+speaker provenance from `workspace_context`. `SPEAKR_PLAYWRIGHT_MODULE` and
+`SPEAKR_CHROMIUM_PATH` may select an installed runtime/browser; by default the
+scripts use the screenshot package's Playwright and its bundled Chromium.
 
 Reproducible screenshot harness for the docs (`docs/screenshots.md`, README,
 user guide pages). Every shot is defined as code, so after a UI change the

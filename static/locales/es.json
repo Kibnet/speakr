@@ -2418,5 +2418,15 @@
     "deleteHint": "¿Eliminar el segmento del borrador? Puede descartar los cambios antes de guardar.",
     "proposalDiscarded": "Propuesta de ASR no aplicada descartada",
     "removeSpeaker": "Eliminar hablante"
+  },
+  "transcriptWorkspace": {
+    "title": "Transcripción y hablantes",
+    "editor": "Editor",
+    "back": "← Hablantes",
+    "splitPinned": "Ambas partes permanecen visibles en la lista.",
+    "resumeSpeaker": "Volver al filtro de hablante",
+    "followUpFailed": "Transcripción guardada. Parte del procesamiento posterior ha fallado.",
+    "followUpUnknown": "Transcripción guardada. No se pudo confirmar el procesamiento posterior.",
+    "retrySummary": "Reintentar la generación del resumen"
   }
 }

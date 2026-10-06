@@ -11,6 +11,7 @@ import { useReprocess } from './modules/composables/reprocess.js';
 import { useTranscription } from './modules/composables/transcription.js';
 import { useSpeakers } from './modules/composables/speakers.js';
 import { useSpeakerModal } from './modules/composables/speaker-modal.js';
+import { useTranscriptWorkspace } from './modules/composables/transcriptWorkspace.js';
 import { useChat } from './modules/composables/chat.js';
 import { useTags } from './modules/composables/tags.js';
 import { usePWA } from './modules/composables/pwa.js';
@@ -2758,17 +2759,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Scroll to the target row but offset upward so the row lands
             // comfortably below the sticky table header (~2 rows of clearance)
             // instead of being clipped at the top.
-            utils.scrollAsrEditorToIndex = (index) => asrEditorVirtualScroll.scrollToIndex(Math.max(0, index - 2), 'auto');
+            utils.scrollAsrEditorToIndex = (index) => {
+                if (utils.workspace?.active()) speakerModalTranscriptRef.value?.querySelector(`[data-segment-index="${index}"]`)?.scrollIntoView({block:'nearest'});
+                else asrEditorVirtualScroll.scrollToIndex(Math.max(0, index - 2), 'auto');
+            };
             utils.setAsrEditorScrollTop = (scrollTop) => {
                 if (asrEditorRef.value) {
                     asrEditorRef.value.scrollTop = scrollTop;
                 }
             };
             // Speakers composable needs processedTranscription and scrollToSegmentIndex
-            const speakersComposable = useSpeakers(state, {...utils,
-                canEditAsrDraft: () => !transcriptionComposable.asrEditingLocked?.value
-            }, processedTranscription);
+            utils.canEditAsrDraft = () => !transcriptionComposable.asrEditingLocked?.value;
+            const speakersComposable = useSpeakers(state, utils, processedTranscription);
             const speakerModalComposable = useSpeakerModal(state, utils);
+            const transcriptWorkspaceComposable = useTranscriptWorkspace(state, utils, transcriptionComposable, speakersComposable, speakerModalComposable);
+            utils.openWorkspace = transcriptionComposable.openAsrEditorModal;
+            utils.closeWorkspace = transcriptionComposable.closeAsrEditorModal;
+            utils.saveWorkspace = transcriptionComposable.saveAsrTranscription;
+            utils.persistLocalTranscript = transcriptionComposable.saveTranscriptionContent;
+            utils.releaseWorkspacePlayback = transcriptionComposable.releaseAsrWorkplacePlayback;
 
             // Recording ids in the order the sidebar shows them, for
             // Shift-click span selection.
@@ -4533,6 +4542,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ...transcriptionComposable,
                 ...speakersComposable,
                 ...speakerModalComposable,
+                ...transcriptWorkspaceComposable,
                 ...chatComposable,
                 ...tagsComposable,
                 ...foldersComposable,

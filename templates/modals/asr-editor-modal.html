@@ -1,17 +1,18 @@
-<!-- ASR workplace: bounded virtual list and one selected draft object. -->
+<!-- Shared speaker/transcript list and tools for one selected draft segment. -->
 <div v-if="showAsrEditorModal" @click.self="closeAsrEditorModal" class="modal-overlay" data-testid="asr-editor">
- <div class="modal-panel modal-panel--xl sw-workplace">
+ <div class="modal-panel modal-panel--xl sw-workplace spk-modal tw-workspace">
   <div class="sw-content" :inert="asrCloseDecision || !!asrDeleteCandidate">
   <header class="modal-header">
-   <h3 class="modal-title" v-text="t('modal.editAsrTranscription')"></h3>
+   <h3 class="modal-title" v-text="t('transcriptWorkspace.title')"></h3>
    <button @click="closeAsrEditorModal" class="modal-close" :aria-label="t('buttons.close')"><i class="fas fa-times"></i></button>
   </header>
+  <div v-if="modalSpeakers.length > 16" class="banner banner--warn"><i class="fas fa-exclamation-triangle"></i><span v-text="t('help.moreSpeakersThanColors')"></span><span v-text="t('help.youHaveXSpeakers', {count:modalSpeakers.length})"></span></div>
   <div class="sw-transport">
    <template v-if="asrCanPlay">
-    <audio ref="asrEditorAudioRef" class="hidden" :key="'asr-editor-'+selectedRecording.id" :src="'/audio/'+selectedRecording.id"
+    <component :is="selectedRecording.mime_type?.startsWith('video/') ? 'video' : 'audio'" ref="asrEditorAudioRef" :class="selectedRecording.mime_type?.startsWith('video/') ? (speakerModalVideoCollapsed ? 'tw-video tw-video-collapsed' : 'tw-video') : 'hidden'" :key="'asr-editor-'+selectedRecording.id" :src="'/audio/'+selectedRecording.id"
       @play="handleModalAudioPlayPause" @pause="handleModalAudioPlayPause"
-      @timeupdate="handleModalAudioTimeUpdate($event); handleAsrWorkplaceTimeUpdate($event)"
-      @loadedmetadata="handleModalAudioLoadedMetadata($event); handleAsrWorkplaceMetadata($event)" @ended="modalAudioIsPlaying=false"></audio>
+      @timeupdate="handleModalAudioTimeUpdate($event); handleAsrWorkplaceTimeUpdate($event); onModalTimeUpdate($event)"
+      @loadedmetadata="handleModalAudioLoadedMetadata($event); handleAsrWorkplaceMetadata($event)" @ended="modalAudioIsPlaying=false"></component>
     <button type="button" data-testid="asr-play" class="btn btn--primary" @click="playAsrWorkplace" :aria-label="modalAudioIsPlaying ? t('asrWorkplace.pause') : t('asrWorkplace.play')"><i :class="modalAudioIsPlaying ? 'fas fa-pause' : 'fas fa-play'"></i></button>
     <label class="sw-playmode"><span class="sr-only" v-text="t('asrWorkplace.playMode')"></span><select data-testid="asr-play-mode" :value="asrPlaybackMode" @change="setAsrPlaybackMode($event.target.value)">
      <option value="segment" v-text="t('asrWorkplace.onlySegment')"></option><option value="marker" :disabled="!asrCanPlayMarker" v-text="t(asrCanPlayMarker ? 'asrWorkplace.fromMarker' : 'asrWorkplace.markerRequired')"></option>
@@ -22,31 +23,20 @@
     <button class="btn btn--ghost" @click="toggleAsrMute" :aria-label="t('asrWorkplace.mute')" :aria-pressed="asrMuted"><i :class="asrMuted || asrVolume===0 ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i></button>
     <input class="sw-volume" type="range" min="0" max="1" step="0.05" :value="asrVolume" @input="setAsrVolume" :aria-label="t('asrWorkplace.volume')" />
     <select data-testid="asr-speed" :value="modalPlaybackRate" @change="modalPlaybackRate=Number($event.target.value); $refs.asrEditorAudioRef.playbackRate=modalPlaybackRate" :aria-label="t('asrWorkplace.speed')"><option v-for="speed in playbackSpeeds" :key="speed" :value="speed">${ speed }×</option></select>
+    <button v-if="selectedRecording.mime_type?.startsWith('video/')" @click="toggleSpeakerModalVideo" class="btn btn--ghost" :aria-label="t(speakerModalVideoCollapsed ? 'speakerModal.showVideo' : 'speakerModal.hideVideo')"><i class="fas fa-video"></i></button>
    </template>
    <p v-else class="sw-note" v-text="t(selectedRecording.incognito ? 'asrWorkplace.incognitoAudio' : 'asrWorkplace.audioUnavailable')"></p>
   </div>
-  <div class="sw-body">
-   <aside class="sw-list" :class="{'sw-list-open':asrListExpanded}">
-    <button class="sw-mobile-picker" data-testid="asr-mobile-picker" @click="asrListExpanded=!asrListExpanded" :aria-expanded="asrListExpanded">${ asrSelectedIndex+1 } / ${ editingSegments.length } · ${ asrSelectedSegment?.speaker || t('asrWorkplace.empty') } <i class="fas fa-chevron-down"></i></button>
-    <div class="sw-list-caption"><strong v-text="t('asrWorkplace.segments')"></strong><span>${ editingSegments.length }</span></div>
-    <div ref="asrEditorRef" data-testid="asr-editor-scroll" class="sw-list-scroll custom-scrollbar" @scroll="onAsrEditorScroll($event)">
-     <div :style="{height:asrEditorSpacerBefore+'px'}" aria-hidden="true"></div>
-     <button v-for="segment in asrEditorVisibleSegments" :key="asrSegmentKey(segment._originalIndex)" type="button"
-       class="sw-list-row" :class="{'sw-selected':segment._originalIndex===asrSelectedIndex,'sw-highlight':segment._originalIndex===asrEditorHighlightIndex}" :aria-current="segment._originalIndex===asrSelectedIndex ? 'true' : undefined"
-       :data-list-index="segment._originalIndex" @click="selectAsrSegment(segment._originalIndex)" :disabled="asrCloseDecision" :title="segment.speaker+' · '+segment.sentence">
-      <span class="sw-list-top"><strong>${ segment._originalIndex+1 }. ${ segment.speaker }</strong><small>${ Number(segment.start_time).toFixed(2) }–${ Number(segment.end_time).toFixed(2) }</small></span>
-      <span class="sw-list-preview" v-text="segment.sentence || '…'"></span>
-     </button>
-     <div :style="{height:asrEditorSpacerAfter+'px'}" aria-hidden="true"></div>
-    </div>
-    <div class="sw-list-actions"><button @click="addSegment" :disabled="asrEditingLocked" class="btn btn--ghost" v-text="t('asrWorkplace.append')"></button><button @click="openEditSpeakersModal" :disabled="asrEditingLocked" class="btn btn--ghost" v-text="t('asrWorkplace.speakers')"></button></div>
-   </aside>
-   <main class="sw-detail custom-scrollbar">
+  <nav class="tw-tabs" role="tablist"><button v-if="workspaceMode==='speakers'" @click="workspacePhonePane='speakers'" :aria-selected="workspacePhonePane==='speakers'" role="tab" v-text="t('speakerModal.speakersTab')"></button><button @click="workspacePhonePane='transcript'" :aria-selected="workspacePhonePane==='transcript'" role="tab" v-text="t('speakerModal.transcriptTab')"></button><button v-if="workspaceMode==='editor'" @click="workspacePhonePane='editor'" :aria-selected="workspacePhonePane==='editor'" role="tab" v-text="t('transcriptWorkspace.editor')"></button></nav>
+<div class="sw-body tw-layout" :class="{'tw-edit-mode':workspaceMode==='editor'}">
+{% include 'modals/workspace-speaker-pane.html' %}
+{% include 'modals/workspace-transcript-pane.html' %}
+<main v-show="workspaceMode==='editor'" data-testid="workspace-editor" class="sw-detail tw-editor custom-scrollbar" :class="{'tw-phone-hide':workspacePhonePane!=='editor'}">
     <template v-if="asrSelectedSegment">
-     <div class="sw-detail-heading"><strong>${ t('asrWorkplace.segment') } ${ asrSelectedIndex+1 } / ${ editingSegments.length }</strong><div class="sw-nav"><button @click="navigateAsrSegment(-1)" :disabled="asrSelectedIndex===0 || asrCloseDecision" :aria-label="t('asrWorkplace.previous')" class="btn btn--ghost">←</button><button @click="navigateAsrSegment(1)" :disabled="asrSelectedIndex===editingSegments.length-1 || asrCloseDecision" :aria-label="t('asrWorkplace.next')" class="btn btn--ghost">→</button></div></div>
+     <div class="sw-detail-heading"><button data-testid="workspace-back" @click="backToWorkspaceSpeakers" class="btn btn--ghost btn--sm" v-text="t('transcriptWorkspace.back')"></button><strong>${ t('asrWorkplace.segment') } ${ asrSelectedIndex+1 } / ${ editingSegments.length }</strong><div class="sw-nav"><button @click="navigateWorkspaceSegment(-1)" :disabled="!canNavigateWorkspaceSegment(-1) || asrCloseDecision" :aria-label="t('asrWorkplace.previous')" class="btn btn--ghost">←</button><button @click="navigateWorkspaceSegment(1)" :disabled="!canNavigateWorkspaceSegment(1) || asrCloseDecision" :aria-label="t('asrWorkplace.next')" class="btn btn--ghost">→</button></div></div>
      <fieldset class="sw-fields" :disabled="asrEditingLocked" data-testid="asr-detail" :data-segment-index="asrSelectedIndex">
       <div class="sw-meta">
-       <label class="sw-speaker-field"><span v-text="t('help.speakerName')"></span><div class="sw-speaker-input"><asr-speaker-input :key="asrSegmentKey(asrSelectedIndex)" data-testid="asr-segment-speaker" :model-value="asrSelectedSegment.speaker" @update:model-value="editAsrSpeaker(asrSelectedIndex,$event)" :options="asrSpeakerOptions" :disabled="asrEditingLocked" :label="t('help.speakerName')"></asr-speaker-input><button type="button" @click="openEditSpeakersModal" :title="t('asrWorkplace.speakers')" :aria-label="t('asrWorkplace.speakers')" class="btn btn--ghost"><i class="fas fa-users"></i></button></div></label>
+       <label class="sw-speaker-field"><span v-text="t('help.speakerName')"></span><div class="sw-speaker-input"><asr-speaker-input :key="asrSegmentKey(asrSelectedIndex)" data-testid="asr-segment-speaker" :model-value="workspaceSpeakerName(asrSelectedSegment.speaker)" @update:model-value="editAsrSpeaker(asrSelectedIndex,$event)" :options="asrSpeakerOptions" :disabled="asrEditingLocked" :label="t('help.speakerName')"></asr-speaker-input><button type="button" @click="openEditSpeakersModal" :title="t('asrWorkplace.speakers')" :aria-label="t('asrWorkplace.speakers')" class="btn btn--ghost"><i class="fas fa-users"></i></button></div></label>
        <label><span v-text="t('help.startTime')"></span><input data-testid="asr-start" type="number" min="0" step="0.01" v-model.number="asrSelectedSegment.start_time" />
         <button type="button" class="sw-boundary" data-testid="asr-extend-start" @click="extendAsrBoundary('start_time')" :disabled="!!asrBoundaryExtension('start_time').error" :title="t('asrWorkplace.'+(asrBoundaryExtension('start_time').error || 'extendStart'))" v-text="t('asrWorkplace.extendStart')"></button>
        </label>
@@ -146,8 +136,11 @@
     <div v-else class="sw-empty"><p v-text="t('asrWorkplace.empty')"></p><button @click="addSegment" :disabled="asrEditingLocked" class="btn btn--primary" v-text="t('buttons.addSegment')"></button></div>
    </main>
   </div>
-  <footer class="sw-footer">
+  <div class="tw-options"><label><input type="checkbox" v-model="regenerateSummaryAfterSpeakerUpdate" :disabled="!asrCanEdit || selectedRecording.incognito"><span v-text="t('help.regenerateSummaryAfterNames')"></span></label>{% include 'modals/workspace-speaker-actions.html' %}</div><footer class="sw-footer">
    <span role="status" aria-live="polite" data-testid="asr-save-status" :class="{'sw-error':asrSaveState==='error'}" v-text="t('asrWorkplace.status_'+asrSaveState)"></span>
+   <span role="status" class="sw-error" v-if="Object.values(workspaceFollowUp).includes('failed')" v-text="t('transcriptWorkspace.followUpFailed')"></span>
+   <span role="status" class="sw-error" v-else-if="Object.values(workspaceFollowUp).includes('unknown')" v-text="t('transcriptWorkspace.followUpUnknown')"></span>
+   <button v-if="workspaceFollowUp.summary==='failed'" data-testid="workspace-retry-summary" @click="retryWorkspaceSummary" :disabled="!asrCanEdit || asrDirty || workspaceRetryingSummary || selectedRecording.incognito" class="btn btn--ghost" v-text="t('transcriptWorkspace.retrySummary')"></button>
    <span class="sw-autosave" v-if="editorAutosave" v-text="t('asrWorkplace.autosave')"></span>
    <button @click="closeAsrEditorModal" class="btn btn--ghost" v-text="t('buttons.close')"></button>
    <div class="sw-save-group"><button data-testid="asr-save" @click="saveAsrTranscription(true)" :disabled="!asrCanEdit || asrSaveState==='saving' || asrCloseDecision" class="btn btn--primary" v-text="t('common.save')"></button><details><summary :aria-label="t('asrWorkplace.saveOptions')">▾</summary><button data-testid="asr-save-close" @click="saveAsrTranscription(false)" :disabled="!asrCanEdit || asrSaveState==='saving'" class="btn btn--primary" v-text="t('asrWorkplace.saveClose')"></button></details></div>

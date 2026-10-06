@@ -32,8 +32,10 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
     const metadataDuration = ref(null), confirmed = ref('');
     let session = 0, recordingId = null, savePromise = null, autosaveTimer = null, playEnd = null, playContext = null;
     const selectedIndex = computed(() => segments.value.indexOf(selected.value));
-    const dirty = computed(() => serializeAsrDraft(segments.value) !== confirmed.value);
-    const editable = computed(() => state.selectedRecording.value?.can_edit !== false &&
+    const serializedDraft = computed(() => serializeAsrDraft(segments.value));
+    const fingerprint = () => callbacks.fingerprint?.(serializedDraft.value) ?? serializedDraft.value;
+    const dirty = computed(() => fingerprint() !== confirmed.value);
+    const editable = computed(() => !utils.workspace?.loading.value && state.selectedRecording.value?.can_edit !== false &&
         state.selectedRecording.value?.is_read_only !== true);
     const locked = computed(() => !editable.value || closeDecision.value || !!deleteCandidate.value);
     let decisionFocus = null;
@@ -62,7 +64,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
         const stored = state.selectedRecording.value?.audio_duration ?? state.selectedRecording.value?.duration;
         return metadataDuration.value || (Number.isFinite(stored) && stored > 0 ? stored : null);
     });
-    const audio = () => document.querySelector('[data-testid="asr-editor"] audio');
+    const audio = () => document.querySelector('[data-testid="asr-editor"] audio, [data-testid="asr-editor"] video');
     const clearTimer = () => { clearTimeout(autosaveTimer); autosaveTimer = null; };
     let playAttempt = 0;
     const cancelBoundedPlayback = () => {
@@ -80,7 +82,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
         if (state.showAsrEditorModal.value && state.editorAutosave?.value && editable.value &&
             dirty.value && !closeDecision.value && !deleteCandidate.value && !savePromise) {
             const token = session;
-            autosaveTimer = setTimeout(() => { if (token === session) save(true); }, 2000);
+            autosaveTimer = setTimeout(() => { if (token === session) save(true, true); }, 2000);
         }
     };
     const select = async index => {
@@ -104,7 +106,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
         playContext = null;
         savePromise = null; clearTimer(); metadataDuration.value = null;
         utils.resetModalAudioState?.();
-        confirmed.value = serializeAsrDraft(segments.value);
+        confirmed.value = fingerprint();
         saveState.value = 'saved'; saveError.value = ''; closeDecision.value = false;
         deleteCandidate.value = null;
         splitPreview.value = null; listExpanded.value = false; playbackMode.value = 'segment';
@@ -119,14 +121,14 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
         selected.value = null; splitPreview.value = null; closeDecision.value = false; metadataDuration.value = null;
         deleteCandidate.value = null;
     };
-    const save = async (keepOpen = true) => {
+    const save = async (keepOpen = true, automatic = false) => {
         if (!editable.value || deleteCandidate.value || !state.showAsrEditorModal.value) return false;
         if (savePromise) { await savePromise; return false; }
-        if (!dirty.value) { if (!keepOpen) callbacks.close(); return true; }
+        if (!dirty.value && !callbacks.needsSave?.(automatic)) { if (!keepOpen) callbacks.close(); return true; }
         clearTimer();
         const payload = serializeAsrDraft(segments.value), id = recordingId, token = session;
         saveState.value = 'saving'; saveError.value = '';
-        savePromise = callbacks.persist(payload, id, () => session === token && recordingId === id);
+        savePromise = callbacks.persist(payload, id, () => session === token && recordingId === id, automatic);
         const pending = savePromise;
         let success;
         try { success = await pending; } catch { success = false; }
@@ -136,7 +138,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
             saveState.value = 'error'; saveError.value = 'saveFailed'; return false;
         }
         const stored = serializeAsrDraft(JSON.parse(success.transcription ?? payload));
-        if (serializeAsrDraft(segments.value) === payload && stored !== payload) {
+        if (success.applyNormalization !== false && serializeAsrDraft(segments.value) === payload && stored !== payload) {
             const normalized = JSON.parse(stored);
             if (Array.isArray(normalized) && normalized.length === segments.value.length) {
                 normalized.forEach((item, i) => {
@@ -145,7 +147,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
                 });
             }
         }
-        confirmed.value = stored; saveState.value = dirty.value ? 'dirty' : 'saved';
+        confirmed.value = success.fingerprint ?? stored; saveState.value = dirty.value ? 'dirty' : 'saved';
         if (!keepOpen && !dirty.value) callbacks.close();
         else scheduleAutosave();
         return true;
@@ -195,6 +197,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
         return !!segment && Number.isFinite(marker) && marker > segment.start_time && marker < segment.end_time;
     });
     const play = async () => {
+        utils.releaseSpeakerSample?.();
         const element = audio();
         if (!element) return;
         if (!element.paused) { playAttempt++; element.pause(); return; }
@@ -265,7 +268,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
             playContext = {segment: selected.value, mode: playbackMode.value};
         }
     };
-    watch?.(() => serializeAsrDraft(segments.value), () => {
+    watch?.(fingerprint, () => {
         if (!state.showAsrEditorModal.value) return;
         if (saveState.value !== 'saving') saveState.value = dirty.value ? 'dirty' : 'saved';
         const preview = splitPreview.value;
@@ -301,6 +304,7 @@ export function useAsrWorkplace(state, utils, tools, callbacks) {
         keepAsrEditing: keepEditing, discardAsrDraft: discard,
         handleAsrWorkplaceMetadata: loadedMetadata, handleAsrWorkplaceTimeUpdate: timeUpdate,
         playAsrWorkplace: play, playAsrSpectrum: playSpectrum,
+        releaseAsrWorkplacePlayback: () => { cancelBoundedPlayback(); playContext = null; tools.releaseSpectrogramPlayback(); },
         asrSpectrumPlaying: spectrumPlaying, asrSpectrumAction: spectrumAction,
         setAsrVolume: setVolume, toggleAsrMute: toggleMute,
         setAsrPlaybackMode: setPlaybackMode, seekAsrWorkplace: seek

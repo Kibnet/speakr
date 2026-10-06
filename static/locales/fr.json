@@ -2418,5 +2418,15 @@
     "deleteHint": "Supprimer ce segment du brouillon ? Vous pouvez abandonner les modifications avant d’enregistrer.",
     "proposalDiscarded": "Proposition ASR non appliquée abandonnée",
     "removeSpeaker": "Supprimer le locuteur"
+  },
+  "transcriptWorkspace": {
+    "title": "Transcription et intervenants",
+    "editor": "Éditeur",
+    "back": "← Intervenants",
+    "splitPinned": "Les deux parties restent visibles dans la liste.",
+    "resumeSpeaker": "Reprendre le filtre par intervenant",
+    "followUpFailed": "Transcription enregistrée. Certaines étapes suivantes ont échoué.",
+    "followUpUnknown": "Transcription enregistrée. Le statut des étapes suivantes n’a pas pu être confirmé.",
+    "retrySummary": "Relancer la génération du résumé"
   }
 }

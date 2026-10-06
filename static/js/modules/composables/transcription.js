@@ -94,6 +94,7 @@ export function useTranscription(state, utils) {
         }));
         parts.forEach(part => { if (part.speaker !== preview.segment.speaker) delete part.speaker_id; });
         spectrum.closeSpectrogram();
+        utils.workspace?.split(preview.segment, parts);
         editingSegments.value.splice(index, 1, ...parts);
         workplace.splitPreview.value = null;
         editingSegments.value.forEach((seg, i) => { seg.id = i; });
@@ -173,8 +174,16 @@ export function useTranscription(state, utils) {
         }
     };
 
-    const openAsrEditorModal = async () => {
+    let openingGeneration = 0;
+    const openAsrEditorModal = async (entry = 'editor') => {
         if (!selectedRecording.value) return;
+        if (showAsrEditorModal.value) {
+            if (entry === 'speakers') utils.workspace?.back();
+            else utils.workspace?.openEditor(_asrEditorPendingScrollIndex ?? workplace.selectedIndex.value);
+            _asrEditorPendingScrollIndex = null;
+            return;
+        }
+        const openingToken = ++openingGeneration;
         clearSplitSelection();
         closeAllSpeakerSuggestions();
 
@@ -197,6 +206,9 @@ export function useTranscription(state, utils) {
             }));
 
             showAsrEditorModal.value = true;
+            const openingId = selectedRecording.value.id;
+            const initialized = await utils.workspace?.start(entry === 'speakers' ? 'speakers' : 'editor');
+            if (initialized === false || openingToken !== openingGeneration || !showAsrEditorModal.value || selectedRecording.value?.id !== openingId) return;
             const targetIndex = _asrEditorPendingScrollIndex;
             workplace.start(targetIndex);
 
@@ -227,8 +239,11 @@ export function useTranscription(state, utils) {
                 }
             });
         } catch (e) {
+            if (openingToken !== openingGeneration) return;
             console.error("Could not parse transcription as JSON for ASR editor:", e);
-            setGlobalError("This transcription is not in the correct format for the ASR editor.");
+            showAsrEditorModal.value = false;
+            utils.workspace?.stop();
+            setGlobalError(e.message || "This transcription is not in the correct format for the ASR editor.");
         }
     };
 
@@ -253,7 +268,9 @@ export function useTranscription(state, utils) {
 
     const closeAsrEditorModal = () => workplace.requestClose();
     const finishAsrEditorClose = () => {
+        openingGeneration++;
         workplace.stop();
+        utils.workspace?.stop();
         spectrum.closeSpectrogram();
         segmentAsr.closeSegmentTranscription();
         clearSplitSelection();
@@ -271,7 +288,7 @@ export function useTranscription(state, utils) {
         }
 
         // Pause any playing modal audio before closing
-        const modalAudio = document.querySelector('.fixed.z-50 audio') || document.querySelector('.fixed.z-50 video');
+        const modalAudio = document.querySelector('[data-testid="asr-editor"] audio, [data-testid="asr-editor"] video');
         if (modalAudio) {
             modalAudio.pause();
         }
@@ -438,7 +455,9 @@ export function useTranscription(state, utils) {
 
     const selectNewSegment = async index => {
         const segment = editingSegments.value[index];
-        await workplace.select(index); await nextTick();
+        if (utils.workspace?.active()) await utils.workspace.openEditor(index);
+        else await workplace.select(index);
+        await nextTick();
         if (showAsrEditorModal.value && workplace.selected.value === segment && !workplace.locked.value)
             document.querySelector('[data-testid="asr-segment-text"]')?.focus();
     };
@@ -527,6 +546,13 @@ export function useTranscription(state, utils) {
 
     const saveTranscriptionContent = async (content, recordingId = selectedRecording.value?.id, isCurrent = () => true) => {
         if (recordingId == null) return false;
+        if (selectedRecording.value?.incognito) {
+            selectedRecording.value.transcription = content;
+            const index = recordings.value.findIndex(r => r.id === recordingId);
+            if (index >= 0) recordings.value[index] = {...recordings.value[index], transcription: content};
+            sessionStorage.setItem('speakr_incognito_recording', JSON.stringify(selectedRecording.value));
+            return {transcription: content};
+        }
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             const response = await fetch(`/recording/${recordingId}/update_transcription`, {
@@ -647,7 +673,11 @@ export function useTranscription(state, utils) {
     };
 
     workplace = useAsrWorkplace(state, utils, {...spectrum, ...segmentAsr}, {
-        clearSplitSelection, persist: saveTranscriptionContent, close: finishAsrEditorClose, remove: removeSegment
+        clearSplitSelection,
+        fingerprint: payload => utils.workspace?.fingerprint(payload) ?? payload,
+        needsSave: automatic => utils.workspace?.needsSave(automatic) || false,
+        persist: (payload, id, isCurrent, automatic) => utils.workspace?.persist(payload, id, isCurrent, automatic) ?? saveTranscriptionContent(payload, id, isCurrent),
+        close: finishAsrEditorClose, remove: removeSegment
     });
     const keyMap = new WeakMap(); let keyCounter = 0;
     const asrSegmentKey = index => {

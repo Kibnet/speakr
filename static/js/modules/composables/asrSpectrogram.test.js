@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { useAsrSpectrogram } from './asrSpectrogram.js';
-let state, spectrum, watchers, audio, manifests, serial, lifecycle, pageLifecycle, storedFrequency;
+let state, spectrum, watchers, audio, manifests, serial, lifecycle, pageLifecycle, storedFrequency, storedGain;
 const ref = value => ({value});
 const tileBlob = (width=1024,height=384,size=24) => {
     const bytes=new Uint8Array(size);bytes.set([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82]);
@@ -11,16 +11,16 @@ const response = (width=1024) => ({ok:true, headers:new Headers({
     'X-Spectrogram-Start':'10','X-Spectrogram-End':'18','X-Spectrogram-Duration':'100','X-Spectrogram-Channels':'2'
 }), blob:async()=>tileBlob(width)});
 const json = data => ({ok:true,status:200,json:async()=>data});
-const ready = (start=10,end=18,span=Math.min(60,Math.max(.25,end-start)),frequency='8000') => {
+const ready = (start=10,end=18,span=Math.min(60,Math.max(.25,end-start)),frequency='8000',gainDb=0) => {
     const tiles=[],step=Math.min(4*span,60);
     for(let offset=start;offset<end-1e-9;offset+=step){const stop=Math.min(end,offset+step),index=tiles.length;
         tiles.push({index,start:offset,end:stop,width:Math.ceil((stop-offset)/span*1024),contentStart:offset,contentEnd:stop,url:`/api/recordings/9/spectrogram/preparations/p${serial}/tiles/${index}`});}
     const data={id:`p${serial++}`,lease:'lease',status:'ready',manifest:{start,end,duration:Math.max(130,end),segmentStart:start,segmentEnd:end,span,channels:2,maxFrequency:frequency==='full'?24000:Number(frequency),plotWidth:1024,tiles}};
-    manifests.set(data.id,data);return data;
+    data.manifest.gainDb=gainDb;manifests.set(data.id,data);return data;
 };
 const serve = async (url,options={}) => {
     if(options.method==='DELETE' || url.endsWith('/lease'))return json({status:'ok'});
-    if(url.endsWith('/prepare')){const body=JSON.parse(options.body);return json(body.existing_id?manifests.get(body.existing_id):ready(body.start,body.end,body.span,body.frequency));}
+    if(url.endsWith('/prepare')){const body=JSON.parse(options.body);return json(body.existing_id?manifests.get(body.existing_id):ready(body.start,body.end,body.span,body.frequency,body.gainDb));}
     if(url.includes('/tiles/')){
         const [id,index]=url.split('/preparations/')[1].split('/tiles/');
         return response(manifests.get(id)?.manifest.tiles[Number(index.split('?')[0])].width || 1024);
@@ -29,6 +29,90 @@ const serve = async (url,options={}) => {
 };
 const prepares = () => fetch.mock.calls.filter(([url])=>url.endsWith('/prepare'));
 const generations = () => prepares().filter(([,options])=>!JSON.parse(options.body).existing_id);
+it('commits brightness once, preserves zoom/pan/marker/audio and isolates cached levels',async()=>{
+    await spectrum.openSpectrogram(0);await spectrum.navigateSpectrogram(.5);await spectrum.navigateSpectrogram(1,1);
+    spectrum.setSpectrogramMarker(14);const window={...spectrum.spectrogram.value.window},count=generations().length;
+    spectrum.draftSpectrogramGain('20');expect(generations()).toHaveLength(count);
+    expect(spectrum.spectrogram.value.draftGainDb).toBe(20);expect(spectrum.spectrogram.value.appliedGainDb).toBe(0);
+    await spectrum.commitSpectrogramGain();expect(generations()).toHaveLength(count+1);
+    expect(spectrum.spectrogram.value.window).toEqual(window);expect(spectrum.spectrogram.value.marker).toBe(14);
+    expect(spectrum.spectrogram.value.appliedGainDb).toBe(20);expect(audio.currentTime).toBe(14);
+    expect(localStorage.setItem).toHaveBeenCalledWith('speakrSpectrogramGainDb','20');
+    await spectrum.commitSpectrogramGain();expect(generations()).toHaveLength(count+1);
+    await spectrum.resetSpectrogramGain();expect(spectrum.spectrogram.value.appliedGainDb).toBe(0);
+    expect(generations()).toHaveLength(count+1);expect(spectrum.spectrogram.value.window).toEqual(window);
+});
+it.each(['0','5','10','15','20','25','30','35','40'])('restores brightness %s independently of frequency',async value=>{
+    storedGain=value;storedFrequency='4000';spectrum=useAsrSpectrogram(state,{nextTick:async()=>{}});
+    await spectrum.openSpectrogram(0);expect(spectrum.spectrogram.value.appliedGainDb).toBe(Number(value));
+    expect(spectrum.spectrogram.value.frequency).toBe('4000');expect(JSON.parse(prepares().at(-1)[1].body).gainDb).toBe(Number(value));
+});
+it.each([null,'NaN','-5','45','1','20.0','','true'])('ignores invalid saved gain %s',async value=>{
+    storedGain=value;spectrum=useAsrSpectrogram(state,{nextTick:async()=>{}});await spectrum.openSpectrogram(0);
+    expect(spectrum.spectrogram.value.appliedGainDb).toBe(0);
+});
+it('retains applied pixels and requested preference on gain error/cancel then retries latest',async()=>{
+    await spectrum.openSpectrogram(0);const url=spectrum.spectrogram.value.url;
+    fetch.mockImplementation((u,o)=>u.endsWith('/prepare')?Promise.resolve({ok:false,status:503,json:async()=>({code:'timeout'})}):serve(u,o));
+    spectrum.draftSpectrogramGain('20');await spectrum.commitSpectrogramGain();
+    expect(spectrum.spectrogram.value.url).toBe(url);expect(spectrum.spectrogram.value.appliedGainDb).toBe(0);
+    expect(spectrum.spectrogram.value.gainDb).toBe(20);expect(storedGain).toBe('20');
+    spectrum.cancelSpectrogramPreparation();fetch.mockImplementation(serve);await spectrum.retrySpectrogram();
+    expect(spectrum.spectrogram.value.appliedGainDb).toBe(20);
+});
+it('ignores a late gain response and refuses a mismatched nonzero manifest',async()=>{
+    await spectrum.openSpectrogram(0);let resolve;
+    fetch.mockImplementation((u,o)=>u.endsWith('/prepare')?new Promise(r=>{resolve=r;}):serve(u,o));
+    spectrum.draftSpectrogramGain('20');const pending=spectrum.commitSpectrogramGain();
+    for(let i=0;i<30&&!resolve;i++)await Promise.resolve();expect(resolve).toBeTypeOf('function');
+    fetch.mockImplementation(serve);spectrum.draftSpectrogramGain('30');await spectrum.commitSpectrogramGain();
+    resolve(json(ready(10,18,8,'8000',20)));await pending;
+    expect(spectrum.spectrogram.value.appliedGainDb).toBe(30);expect(storedGain).toBe('30');
+    fetch.mockImplementation((u,o)=>u.endsWith('/prepare')?Promise.resolve(json(ready(10,18,8,'8000',0))):serve(u,o));
+    spectrum.draftSpectrogramGain('40');await spectrum.commitSpectrogramGain();
+    expect(spectrum.spectrogram.value.error).toBe('media');expect(spectrum.spectrogram.value.appliedGainDb).toBe(30);
+});
+it('invalidates an older gain response even when a tile failure throttles the latest choice',async()=>{
+    state.editingSegments.value[0].end_time=130;await spectrum.openSpectrogram(0);let finish;
+    fetch.mockImplementation((u,o)=>u.endsWith('/prepare')?new Promise(r=>{finish=r;}):u.includes('/tiles/1')?Promise.resolve({ok:false,status:429,json:async()=>({code:'busy'})}):serve(u,o));
+    spectrum.draftSpectrogramGain('20');const pending=spectrum.commitSpectrogramGain();for(let i=0;i<30&&!finish;i++)await Promise.resolve();
+    expect(finish).toBeTypeOf('function');await spectrum.navigateSpectrogram(1,1);expect(spectrum.spectrogram.value.error).toBe('busy');
+    spectrum.draftSpectrogramGain('30');await spectrum.commitSpectrogramGain();finish(json(ready(10,130,60,'8000',20)));await pending;
+    expect(spectrum.spectrogram.value.appliedGainDb).toBe(0);expect(spectrum.spectrogram.value.gainDb).toBe(30);expect(storedGain).toBe('30');
+});
+it('debounces keyboard commits and clears pending timers on close',async()=>{
+    await spectrum.openSpectrogram(0);vi.useFakeTimers();const count=generations().length;
+    spectrum.draftSpectrogramGain('5');spectrum.queueSpectrogramGain();spectrum.draftSpectrogramGain('10');spectrum.queueSpectrogramGain();
+    await vi.advanceTimersByTimeAsync(300);expect(spectrum.spectrogram.value.appliedGainDb).toBe(10);
+    expect(generations()).toHaveLength(count+1);
+    spectrum.draftSpectrogramGain('15');spectrum.queueSpectrogramGain();await spectrum.closeSpectrogram();
+    await vi.advanceTimersByTimeAsync(500);expect(generations()).toHaveLength(count+1);vi.useRealTimers();
+});
+it('cancels a pointer draft without changing preference or preparing an image',async()=>{
+    await spectrum.openSpectrogram(0);const count=generations().length;
+    spectrum.draftSpectrogramGain('20');spectrum.cancelSpectrogramGainDraft();await spectrum.commitSpectrogramGain();
+    expect(spectrum.spectrogram.value.draftGainDb).toBe(0);expect(storedGain).toBeNull();expect(generations()).toHaveLength(count);
+});
+it('cancels a queued keyboard commit before a pointer drag takes over',async()=>{
+    await spectrum.openSpectrogram(0);vi.useFakeTimers();const count=generations().length;
+    spectrum.draftSpectrogramGain('5');spectrum.queueSpectrogramGain();spectrum.beginSpectrogramGainPointer();spectrum.draftSpectrogramGain('20');
+    await vi.advanceTimersByTimeAsync(500);expect(generations()).toHaveLength(count);expect(storedGain).toBeNull();
+    await spectrum.commitSpectrogramGain();expect(generations()).toHaveLength(count+1);expect(spectrum.spectrogram.value.appliedGainDb).toBe(20);vi.useRealTimers();
+});
+it.each([null,'0',5,NaN])('rejects invalid applied manifest gain %s while keeping default pixels',async value=>{
+    await spectrum.openSpectrogram(0);
+    fetch.mockImplementation((u,o)=>{if(u.endsWith('/prepare')){const d=ready(10,18,8,'4000');d.manifest.gainDb=value;return Promise.resolve(json(d));}return serve(u,o);});
+    await spectrum.setSpectrogramFrequency('4000');expect(spectrum.spectrogram.value.error).toBe('media');expect(spectrum.spectrogram.value.appliedGainDb).toBe(0);
+});
+it('retains brightness across lifecycle transitions even if preference IO throws',async()=>{
+    localStorage.getItem.mockImplementation(()=>{throw new Error('blocked');});localStorage.setItem.mockImplementation(()=>{throw new Error('quota');});
+    const first=watchers.length;spectrum=useAsrSpectrogram(state,{nextTick:async()=>{}});await spectrum.openSpectrogram(0);
+    spectrum.draftSpectrogramGain('20');await spectrum.commitSpectrogramGain();
+    state.showAsrEditorModal.value=false;await watchers[first]();state.showAsrEditorModal.value=true;
+    await spectrum.openSpectrogram(1);expect(spectrum.spectrogram.value.appliedGainDb).toBe(20);
+    state.selectedRecording.value={id:10,audio_path:'/other.wav'};await watchers[first]();
+    await spectrum.openSpectrogram(0);expect(spectrum.spectrogram.value.appliedGainDb).toBe(20);
+});
 it('disables scale boundary actions and guards them without any requests',async()=>{
     await spectrum.openSpectrogram(0);
     expect(spectrum.canZoomSpectrogram(2)).toBe(false);expect(spectrum.canZoomSpectrogram(.5)).toBe(true);
@@ -72,8 +156,8 @@ it('explicit cancellation clears a failed fit retry intent',async()=>{
 });
 beforeEach(() => {
     watchers=[];manifests=new Map();serial=0;lifecycle=new Map();pageLifecycle=new Map();
-    storedFrequency=null;
-    vi.stubGlobal('localStorage',{getItem:vi.fn(()=>storedFrequency),setItem:vi.fn((key,value)=>{storedFrequency=value;})});
+    storedFrequency=null;storedGain=null;
+    vi.stubGlobal('localStorage',{getItem:vi.fn(key=>key==='speakrSpectrogramGainDb'?storedGain:storedFrequency),setItem:vi.fn((key,value)=>{if(key==='speakrSpectrogramGainDb')storedGain=value;else storedFrequency=value;})});
     vi.stubGlobal('Vue',{ref,watch:(source,cb)=>watchers.push(cb)});
     vi.spyOn(URL,'createObjectURL').mockReturnValue('blob:spectrum');
     vi.spyOn(URL,'revokeObjectURL').mockImplementation(()=>{});

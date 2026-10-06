@@ -2311,6 +2311,13 @@
     "storageTooltip": "Хранилище: {{used}} из {{quota}}"
   },
   "asrSpectrogram": {
+    "brightness": "Яркость",
+    "brightnessHint": "Проявляет тихие звуки. Не меняет громкость аудио.",
+    "resetBrightness": "Сбросить",
+    "decibels": "дБ",
+    "updatingBrightness": "Обновление яркости. ",
+    "displayedBrightness": "Сейчас показано:",
+    "error_gain": "Выберите яркость от 0 до +40 дБ с шагом 5 дБ.",
     "title": "Спектрограмма сегмента",
     "loading": "Строим спектрограмму…",
     "marker": "Время разделения",

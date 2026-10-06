@@ -4,7 +4,7 @@
   <div class="sw-content" :inert="asrCloseDecision || !!asrDeleteCandidate">
   <header class="modal-header">
    <h3 class="modal-title" v-text="t('transcriptWorkspace.title')"></h3>
-   <button @click="closeAsrEditorModal" class="modal-close" :aria-label="t('buttons.close')"><i class="fas fa-times"></i></button>
+   <button data-testid="asr-editor-close" @click="closeAsrEditorModal" class="modal-close" :aria-label="t('buttons.close')"><i class="fas fa-times"></i></button>
   </header>
   <div v-if="modalSpeakers.length > 16" class="banner banner--warn"><i class="fas fa-exclamation-triangle"></i><span v-text="t('help.moreSpeakersThanColors')"></span><span v-text="t('help.youHaveXSpeakers', {count:modalSpeakers.length})"></span></div>
   <div class="sw-transport">
@@ -102,6 +102,22 @@
                     <div class="flex justify-between font-mono text-[var(--text-muted)] mt-0.5" data-testid="asr-spectrogram-window"><span>${ spectrogram.window.start.toFixed(2) } s</span><span>${ spectrogram.window.end.toFixed(2) } s</span></div>
                 </div>
             </div>
+            <div class="sw-spectrum-brightness" data-testid="asr-spectrogram-brightness-controls" @click.stop @keydown.stop>
+                <label for="asr-spectrum-gain" v-text="t('asrSpectrogram.brightness')" :title="t('asrSpectrogram.brightnessHint')"></label>
+                <input id="asr-spectrum-gain" data-testid="asr-spectrogram-gain" type="range" min="0" max="40" step="5"
+                       :value="spectrogram.draftGainDb" :aria-label="t('asrSpectrogram.brightness')"
+                       :aria-valuetext="'+' + spectrogram.draftGainDb + ' ' + t('asrSpectrogram.decibels')"
+                       :title="t('asrSpectrogram.brightnessHint')" @pointerdown="beginSpectrogramGainPointer" @pointercancel="cancelSpectrogramGainDraft"
+                       @keydown="spectrogram.gainKeyboard=true" @input="draftSpectrogramGain($event.target.value)"
+                       @change="spectrogram.gainKeyboard ? queueSpectrogramGain() : commitSpectrogramGain()" />
+                <output data-testid="asr-spectrogram-gain-value" for="asr-spectrum-gain">+${ spectrogram.draftGainDb } ${ t('asrSpectrogram.decibels') }</output>
+                <button data-testid="asr-spectrogram-gain-reset" type="button" class="btn btn--ghost" @click="resetSpectrogramGain"
+                        :disabled="spectrogram.draftGainDb===0 && spectrogram.gainDb===0" v-text="t('asrSpectrogram.resetBrightness')"></button>
+            </div>
+            <p v-if="spectrogram.url && spectrogram.appliedGainDb !== spectrogram.draftGainDb" data-testid="asr-spectrogram-applied-gain" role="status" class="sw-note">
+                <span v-if="spectrogram.loading" v-text="t('asrSpectrogram.updatingBrightness')"></span>
+                <span v-text="t('asrSpectrogram.displayedBrightness')"></span> +${ spectrogram.appliedGainDb } ${ t('asrSpectrogram.decibels') }
+            </p>
             <div class="flex flex-wrap items-center gap-1 mt-1">
                 <button type="button" data-testid="asr-spectrogram-zoom-out" @click="navigateSpectrogram(2)" :disabled="!canZoomSpectrogram(2)" :title="t('asrSpectrogram.zoomOut')" :aria-label="t('asrSpectrogram.zoomOut')" class="btn btn--ghost px-2 py-1">−</button>
                 <button type="button" data-testid="asr-spectrogram-zoom-in" @click="navigateSpectrogram(0.5)" :disabled="!canZoomSpectrogram(0.5)" :title="t('asrSpectrogram.zoomIn')" :aria-label="t('asrSpectrogram.zoomIn')" class="btn btn--ghost px-2 py-1">+</button>

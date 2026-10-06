@@ -39,6 +39,23 @@ def wait_worker_ack(cache, identifier):
     pytest.fail('ready worker did not acknowledge stopping')
 
 
+def test_gain_cache_identity_applied_manifest_reuse_and_wrong_existing_id(source, tmp_path):
+    from src.services.spectrogram_cache import SpectrogramCache
+    cache = SpectrogramCache(tmp_path / 'gain-cache')
+    path = str(source)
+    normal = wait_ready(cache, cache.prepare(1, 9, path, 0, 2, '8000', 2), path)
+    brighter = wait_ready(cache, cache.prepare(1, 9, path, 0, 2, '8000', 2, gain_db=20), path)
+    assert normal['manifest']['gainDb'] == 0 and brighter['manifest']['gainDb'] == 20
+    assert normal['id'] != brighter['id']
+    renders = json.loads((cache.root / 'state.json').read_text())['renderCount']
+    reused = cache.prepare(1, 9, path, 0, 2, '8000', 2, gain_db=20)
+    assert reused['id'] == brighter['id']
+    assert json.loads((cache.root / 'state.json').read_text())['renderCount'] == renders
+    with pytest.raises(spectra.SpectrogramError) as error:
+        cache.prepare(1, 9, path, 0, 2, '8000', 2, existing_id=normal['id'], gain_db=20)
+    assert error.value.status == 410
+
+
 @pytest.fixture
 def source(tmp_path):
     path = tmp_path / 'stereo.wav'

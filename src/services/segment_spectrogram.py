@@ -74,6 +74,14 @@ class Spectrogram:
     channels: int
     max_frequency: float = 8000
     sample_rate: int = 16000
+    gain_db: int = 0
+
+
+def validate_gain(value):
+    # Query strings and browser preferences use the same nine bounded levels.
+    if isinstance(value, bool) or str(value) not in tuple(str(n) for n in range(0, 41, 5)):
+        raise SpectrogramError('gain', 400)
+    return int(value)
 
 
 def validate_frequency(value):
@@ -140,7 +148,8 @@ def probe_spectrogram(path, frequency, timeout=5):
     return duration, channels, sample_rate, output_rate
 
 
-def render_tile(path, start, end, width, metadata, maximum=MAX_TILE_PNG, timeout=15):
+def render_tile(path, start, end, width, metadata, maximum=MAX_TILE_PNG, timeout=15, *, gain_db=0):
+    gain_db = validate_gain(gain_db)
     duration, channels, sample_rate, output_rate = metadata
     if not (1 <= width <= 4096 and 0 <= start < end <= duration and end - start <= MAX_WINDOW + 1e-8):
         raise SpectrogramError('bounds', 400)
@@ -154,19 +163,20 @@ def render_tile(path, start, end, width, metadata, maximum=MAX_TILE_PNG, timeout
         '-t', f'{end - start:.9f}', '-i', path,
         '-filter_complex_threads', '1', '-filter_complex',
         f'[0:a:0]{channel_order}aresample={output_rate},showspectrumpic=s={width}x{height}:mode=separate:'
-        'legend=0:fscale=lin:scale=log:color=magma:win_func=hann:drange=80[spectrum]',
+        f'legend=0:fscale=lin:scale=log:color=magma:win_func=hann:drange=80:limit={-gain_db}[spectrum]',
         '-map', '[spectrum]', '-an',
         '-frames:v', '1', '-threads', '1', '-f', 'image2pipe', '-vcodec', 'png', 'pipe:1'
     ], timeout)
     if (len(picture) > maximum or not picture.startswith(b'\x89PNG\r\n\x1a\n') or
             len(picture) < 24 or struct.unpack('>II', picture[16:24]) != (width, height)):
         raise SpectrogramError('media')
-    return Spectrogram(picture, start, end, duration, channels, output_rate / 2, sample_rate)
+    return Spectrogram(picture, start, end, duration, channels, output_rate / 2, sample_rate, gain_db)
 
 
-def render_spectrogram(path, start, end, frequency=None):
+def render_spectrogram(path, start, end, frequency=None, *, gain_db=0):
     start, end = validate_window(start, end)
     frequency = validate_frequency(frequency)
+    gain_db = validate_gain(gain_db)
     if not _generation.acquire(blocking=False):
         raise SpectrogramError('busy', 429)
     try:
@@ -175,7 +185,7 @@ def render_spectrogram(path, start, end, frequency=None):
             metadata = probe_spectrogram(path, frequency)
             if start >= metadata[0]:
                 raise SpectrogramError('bounds', 400)
-            result = render_tile(path, start, min(end, metadata[0]), 1024, metadata, MAX_PNG)
+            result = render_tile(path, start, min(end, metadata[0]), 1024, metadata, MAX_PNG, gain_db=gain_db)
             try:
                 after = source_fingerprint(path)
             except SpectrogramError:

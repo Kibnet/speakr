@@ -74,7 +74,9 @@ Both modes use one draft and one save, including speaker names and transcript ch
 
 ![Segment spectrogram and split marker](../assets/images/screenshots/asr-segment-spectrogram.png)
 
-Choose **0–2 / 0–4 / 0–8 kHz / Full range** above the plot. The default 8 kHz view focuses on speech. The axis shows the actual available frequency range, and changing it keeps your split marker and time window.
+Choose **0–2 / 0–4 / 0–8 kHz / Full range** at the upper frequency label on the left of the plot. The default 8 kHz view focuses on speech. The axis shows the actual available frequency range, and changing it keeps your split marker and time window. Your choice is remembered in this browser.
+
+Use **Brightness** below the plot to reveal quiet sounds, from 0 to +40 dB in 5 dB steps. It changes the spectrogram's color scale without changing the audio volume or file. Release the slider to apply; keyboard changes settle before applying. Your time window, zoom and split marker stay in place. Brightness is remembered in this browser; **Reset** returns to 0 dB. A new brightness level may need preparation. The previous image remains visible, with its currently displayed level labelled until the new one is ready. Strong amplification also makes noise more visible.
 
 **Transcribe a Segment Again**: Click the circular arrow in a segment's actions to recognize its current audio range, including a segment you have just split and have not saved yet. Review and edit the proposed text, then click **Replace text** to apply it to that segment. The speaker and timestamps stay the same. Save normally, or let your enabled autosave save the replacement. Generating a proposal alone does not change the transcript. Local mono or stereo segments from 0.25 seconds to 5 minutes are supported; split longer segments first. Changing the segment's text or timestamps while recognition is running invalidates the proposal.
 

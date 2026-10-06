@@ -3800,7 +3800,7 @@ def segment_transcription_status(recording_id, job_id):
 @recordings_bp.route('/api/recordings/<int:recording_id>/spectrogram')
 @login_required
 def get_segment_spectrogram(recording_id):
-    from src.services.segment_spectrogram import render_spectrogram, validate_window, validate_frequency, SpectrogramError
+    from src.services.segment_spectrogram import render_spectrogram, validate_window, validate_frequency, validate_gain, SpectrogramError
     recording = db.session.get(Recording, recording_id)
     if recording is None:
         return jsonify(code='missing'), 404
@@ -3815,12 +3815,13 @@ def get_segment_spectrogram(recording_id):
     try:
         start, end = validate_window(request.args.get('start'), request.args.get('end'))
         frequency = validate_frequency(request.args.get('frequency'))
+        gain_db = validate_gain(request.args.get('gainDb', '0'))
         storage = get_storage_service()
         locator = storage.parse_locator(recording.audio_path)
         if not locator or not locator.is_local:
             return jsonify(code='remote'), 501
         path = storage.resolve_local_filesystem_path(recording.audio_path)
-        result = render_spectrogram(path, start, end, frequency)
+        result = render_spectrogram(path, start, end, frequency, gain_db=gain_db)
         return Response(result.png, mimetype='image/png', headers={
             'Cache-Control': 'private, no-store',
             'X-Spectrogram-Start': str(result.start),
@@ -3829,6 +3830,7 @@ def get_segment_spectrogram(recording_id):
             'X-Spectrogram-Channels': str(result.channels),
             'X-Spectrogram-Max-Frequency': str(result.max_frequency),
             'X-Spectrogram-Sample-Rate': str(result.sample_rate),
+            'X-Spectrogram-Gain-Db': str(result.gain_db),
         })
     except SpectrogramError as error:
         response = jsonify(code=error.code)
@@ -3894,7 +3896,9 @@ def prepare_segment_spectrogram(recording_id):
             raise SpectrogramError('bounds', 400)
         if 'existing_id' in data and (not isinstance(data['existing_id'], str) or not data['existing_id']):
             raise SpectrogramError('expired', 410)
-        result = spectrogram_cache.prepare(current_user.id, recording_id, path, data.get('start'), data.get('end'), data.get('frequency'), data.get('span'), existing_id=data.get('existing_id'))
+        if 'gainDb' in data and type(data['gainDb']) is not int:
+            raise SpectrogramError('gain', 400)
+        result = spectrogram_cache.prepare(current_user.id, recording_id, path, data.get('start'), data.get('end'), data.get('frequency'), data.get('span'), existing_id=data.get('existing_id'), gain_db=data.get('gainDb', 0))
         return _prepared_spectrogram_response(result, recording_id, 200 if result['status'] == 'ready' else 202)
     except SpectrogramError as error:
         return _prepared_spectrogram_error(error)

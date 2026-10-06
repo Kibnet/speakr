@@ -81,10 +81,13 @@ def fixture():
     if spectral:
         sample_rate = options.get('audio_sample_rate', 16000)
         channels = options.get('audio_channels', 2)
+        gain = options.get('audio_amplitude', 1)
+        if isinstance(gain, bool) or not isinstance(gain, (int, float)) or not math.isfinite(gain) or not .001 <= gain <= 1:
+            return jsonify(error='Invalid disposable audio amplitude'), 400
         if sample_rate not in (8000, 16000, 44100, 48000) or channels not in (1, 2):
             return jsonify(error='Invalid disposable audio format'), 400
         frames = round(spectral_duration * sample_rate)
-        format_suffix = '' if (sample_rate, channels) == (16000, 2) else f'-{sample_rate}-{channels}'
+        format_suffix = ('' if (sample_rate, channels) == (16000, 2) else f'-{sample_rate}-{channels}') + (f'-quiet-{gain}' if gain != 1 else '')
         audio_path = str(fixture_dir / 'uploads' / f'spectral-fixture-{frames}{format_suffix}.wav')
         Path(audio_path).parent.mkdir(parents=True, exist_ok=True)
         if not Path(audio_path).exists():
@@ -92,7 +95,7 @@ def fixture():
             for i in range(sample_rate * 10):
                 t = i / sample_rate
                 frequency = 400 if t < 3 else 1200 if 4 <= t < 8 else 0
-                amplitude = int(16000 * math.sin(2 * math.pi * frequency * t)) if frequency else 0
+                amplitude = int(16000 * gain * math.sin(2 * math.pi * frequency * t)) if frequency else 0
                 period += struct.pack('<hh', amplitude, -amplitude) if channels == 2 else struct.pack('<h', amplitude)
             with wave.open(audio_path, 'wb') as file:
                 file.setnchannels(channels); file.setsampwidth(2); file.setframerate(sample_rate)

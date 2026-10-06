@@ -2311,6 +2311,13 @@
     "storageTooltip": "Armazenamento: {{used}} de {{quota}}"
   },
   "asrSpectrogram": {
+    "brightness": "Brilho",
+    "brightnessHint": "Revela sons baixos. Não altera o volume do áudio.",
+    "resetBrightness": "Redefinir",
+    "decibels": "dB",
+    "updatingBrightness": "Atualizando o brilho. ",
+    "displayedBrightness": "Exibido agora:",
+    "error_gain": "Escolha um brilho de 0 a +40 dB em passos de 5 dB.",
     "title": "Segment spectrogram",
     "loading": "Building spectrogram…",
     "marker": "Split time",

@@ -2311,6 +2311,13 @@
     "storageTooltip": "Storage: {{used}} of {{quota}}"
   },
   "asrSpectrogram": {
+    "brightness": "Brightness",
+    "brightnessHint": "Reveals quiet sounds. Does not change audio volume.",
+    "resetBrightness": "Reset",
+    "decibels": "dB",
+    "updatingBrightness": "Updating brightness. ",
+    "displayedBrightness": "Currently shown:",
+    "error_gain": "Choose brightness from 0 to +40 dB in 5 dB steps.",
     "title": "Segment spectrogram",
     "loading": "Building spectrogram…",
     "marker": "Split time",

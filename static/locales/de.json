@@ -2311,6 +2311,13 @@
     "storageTooltip": "Speicher: {{used}} von {{quota}}"
   },
   "asrSpectrogram": {
+    "brightness": "Helligkeit",
+    "brightnessHint": "Macht leise Geräusche sichtbar. Ändert nicht die Audiolautstärke.",
+    "resetBrightness": "Zurücksetzen",
+    "decibels": "dB",
+    "updatingBrightness": "Helligkeit wird aktualisiert. ",
+    "displayedBrightness": "Derzeit angezeigt:",
+    "error_gain": "Wählen Sie eine Helligkeit von 0 bis +40 dB in 5-dB-Schritten.",
     "title": "Segment spectrogram",
     "loading": "Building spectrogram…",
     "marker": "Split time",

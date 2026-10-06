@@ -6,17 +6,20 @@ const DECODED_LIMIT = 16 * 1024 * 1024;
 const TILE_LIMIT = 8 * 1024 * 1024;
 const FREQUENCY_KEY = 'speakrSpectrogramFrequency';
 const FREQUENCIES = ['2000','4000','8000','full'];
+const GAIN_KEY = 'speakrSpectrogramGainDb';
+const GAINS = Array.from({length:9},(_,i)=>String(i*5));
 const errorCodes = ['bounds', 'busy', 'media', 'channels', 'frequency', 'timeout', 'missing', 'remote',
-    'changed', 'forbidden', 'expired', 'limit', 'cancelled'];
+    'changed', 'forbidden', 'expired', 'limit', 'cancelled', 'gain'];
 
-function validatedManifest(m, view, span) {
+function validatedManifest(m, view, span, gainDb) {
     if (!m || ![m.start,m.end,m.duration,m.segmentStart,m.segmentEnd,m.span,m.maxFrequency].every(Number.isFinite) ||
         m.start < 0 || m.end <= m.start || m.end > m.duration + 1e-8 ||
         m.segmentStart !== view.segmentStart || m.segmentEnd<=m.segmentStart || m.start>m.segmentStart+1e-8 || m.end<m.segmentEnd-1e-8 ||
         Math.abs(m.segmentEnd - Math.min(view.segmentEnd,m.duration)) > 1e-8 ||
         m.span < .25 || m.span > Math.max(60,view.segmentEnd-view.segmentStart) + 1e-8 || Math.abs(m.span-span) > 1e-8 ||
         ![1,2].includes(m.channels) || m.maxFrequency <= 0 || m.maxFrequency > 96000 || m.plotWidth !== 1024 ||
-        !Array.isArray(m.tiles) || !m.tiles.length || m.tiles.length > 8192) throw new Error('media');
+        !Array.isArray(m.tiles) || !m.tiles.length || m.tiles.length > 8192 ||
+        (m.gainDb===undefined ? gainDb!==0 : !Number.isInteger(m.gainDb) || m.gainDb!==gainDb)) throw new Error('media');
     let end = m.start;
     m.tiles.forEach((tile,index) => {
         if (tile.index !== index || ![tile.start,tile.end,tile.width,tile.contentStart,tile.contentEnd].every(Number.isFinite) ||
@@ -36,6 +39,11 @@ export function useAsrSpectrogram(state, utils) {
     let savedFrequency;
     try { savedFrequency=localStorage.getItem(FREQUENCY_KEY); } catch { /* Browser preferences may be blocked. */ }
     let frequency = FREQUENCIES.includes(savedFrequency) ? savedFrequency : '8000';
+    let savedGain;
+    try { savedGain=localStorage.getItem(GAIN_KEY); } catch { /* Optional browser preference. */ }
+    let gainDb = GAINS.includes(savedGain) ? Number(savedGain) : 0;
+    let gainTimer=null;
+    const clearGainTimer=()=>{clearTimeout(gainTimer);gainTimer=null;};
     let activeObject = null, requestId = 0, viewportId = 0;
     let openGeneration=0;
     let retryTarget=null;
@@ -248,14 +256,15 @@ export function useAsrSpectrogram(state, utils) {
         if (!view) return;
         // Keep failed intent separate from the scale that is still displayed.
         const target={view,segment:activeObject,recording:selectedRecording.value,
-            audioPath:selectedRecording.value?.audio_path,frequency,span,center};
+            audioPath:selectedRecording.value?.audio_path,frequency,gainDb,span,center};
         retryTarget=target;
-        if (Date.now()<retryAt) {view.error='busy';return;}
         cancel(); const token=requestId;
+        // A throttled new intent still supersedes the previous preparation.
+        if (Date.now()<retryAt) {view.loading=false;view.error='busy';return;}
         await Promise.allSettled([...leaseReleases]);
         if(!current(view,token))return;
         controller=new AbortController(); const signal=controller.signal;
-        const key=`${view.recordingId}:${view.segmentStart}:${view.segmentEnd}:${frequency}:${span}`;
+        const key=`${view.recordingId}:${view.segmentStart}:${view.segmentEnd}:${target.frequency}:${span}:${target.gainDb}`;
         let item=cache.get(key), created=false, replacedItem=null;
         view.loading=true;view.error='';view.requestedSpan=span;
         try {
@@ -270,7 +279,7 @@ export function useAsrSpectrogram(state, utils) {
                 if(item.lease)data=await responseJson(await fetch(leasedUrl(endpoint(view,item.id),item),{signal}));
                 else {
                     data=await responseJson(await fetch(`/api/recordings/${view.recordingId}/spectrogram/prepare`,
-                        jsonOptions('POST',{start:view.segmentStart,end:view.segmentEnd,frequency,span,existing_id:item.id})));
+                        jsonOptions('POST',{start:view.segmentStart,end:view.segmentEnd,frequency:target.frequency,gainDb:target.gainDb,span,existing_id:item.id})));
                     if(!current(view,token) || data.id!==item.id || data.status!=='ready' || typeof data.lease!=='string' || !data.lease) {
                         releaseLease({recordingId:view.recordingId,id:data.id,lease:data.lease});
                         if(!current(view,token))return;
@@ -282,8 +291,8 @@ export function useAsrSpectrogram(state, utils) {
             else {
                 // Read the accepted start response even after closing, to release a late lease by ID.
                 data=await responseJson(await fetch(`/api/recordings/${view.recordingId}/spectrogram/prepare`,
-                    jsonOptions('POST',{start:view.segmentStart,end:view.segmentEnd,frequency,span})));
-                item={key,recordingId:view.recordingId,id:data.id,lease:data.lease,frequency,manifest:null,blobs:new Map(),urls:new Map(),expired:false,disposed:false,
+                    jsonOptions('POST',{start:view.segmentStart,end:view.segmentEnd,frequency:target.frequency,gainDb:target.gainDb,span})));
+                item={key,recordingId:view.recordingId,id:data.id,lease:data.lease,frequency:target.frequency,gainDb:target.gainDb,manifest:null,blobs:new Map(),urls:new Map(),expired:false,disposed:false,
                     needsValidation:false,validatedAt:Date.now(),validationPromise:null};
                 created=true;
                 if(typeof item.id!=='string' || typeof item.lease!=='string') throw new Error('media');
@@ -299,7 +308,7 @@ export function useAsrSpectrogram(state, utils) {
                 data=await responseJson(await fetch(leasedUrl(endpoint(view,item.id),item),{signal}));
             }
             if(data.status!=='ready') throw new Error(data.code || 'cancelled');
-            item.manifest=validatedManifest(data.manifest,view,span);
+            item.manifest=validatedManifest(data.manifest,view,span,target.gainDb);
             item.needsValidation=false;item.validatedAt=Date.now();
             if(!current(view,token)) {if(created)release(item);return;}
             const anchor=center ?? (view.window.start+view.window.end)/2;
@@ -318,7 +327,7 @@ export function useAsrSpectrogram(state, utils) {
             if(replacedItem)release(replacedItem);
             Object.assign(view,{representation:{start:item.manifest.start,end:item.manifest.end},window,span:item.manifest.span,
                 duration:item.manifest.duration,channels:item.manifest.channels,maxFrequency:item.manifest.maxFrequency,
-                frequency:item.frequency,requestedSpan:item.manifest.span,loading:false,tilesLoading:false,progress:null});
+                frequency:item.frequency,appliedGainDb:item.gainDb,requestedSpan:item.manifest.span,loading:false,tilesLoading:false,progress:null});
             if(retryTarget===target)retryTarget=null;
             updateDescriptors();
             while(cache.size>4) {const victim=[...cache.values()].find(entry=>entry!==activeItem);if(!victim)break;release(victim);}
@@ -331,6 +340,7 @@ export function useAsrSpectrogram(state, utils) {
         }
     };
     const closeSpectrogram = async (restoreFocus=false,purgeCache=true,preserveOpening=false) => {
+        clearGainTimer();
         retryTarget=null;
         if(!preserveOpening)openGeneration++;
         const segment=activeObject, index=editingSegments.value?.indexOf(segment);
@@ -364,7 +374,7 @@ export function useAsrSpectrogram(state, utils) {
         const start=activeObject.start_time,end=activeObject.end_time,window=spectrogramWindow(start,end);
         spectrogram.value={recordingId:selectedRecording.value.id,segmentStart:start,segmentEnd:end,speaker:activeObject.speaker,
             window,span:Math.min(60,Math.max(.25,end-start)),requestedSpan:Math.min(60,Math.max(.25,end-start)),
-            marker:null,markerError:false,channels:1,duration:end,frequency,maxFrequency:8000,url:null,tiles:[],
+            marker:null,markerError:false,channels:1,duration:end,frequency,gainDb,draftGainDb:gainDb,appliedGainDb:null,maxFrequency:8000,url:null,tiles:[],
             viewportWidth:1024,viewportHeight:256,nativeOffset:null,representation:null,error:'',loading:false,tilesLoading:false,progress:null};
         const actualIndex=editingSegments.value.indexOf(segment);
         if(state.asrEditorHighlightIndex)state.asrEditorHighlightIndex.value=actualIndex;
@@ -387,6 +397,23 @@ export function useAsrSpectrogram(state, utils) {
         try { localStorage.setItem(FREQUENCY_KEY,value); } catch { /* Keep the in-memory choice when storage is unavailable. */ }
         return load();
     };
+    const draftSpectrogramGain = value => {
+        if(spectrogram.value && GAINS.includes(String(value)))spectrogram.value.draftGainDb=Number(value);
+    };
+    const commitSpectrogramGain = () => {
+        clearGainTimer();const view=spectrogram.value;
+        if(!view || !GAINS.includes(String(view.draftGainDb)) || view.draftGainDb===gainDb)return;
+        gainDb=view.draftGainDb;view.gainDb=gainDb;
+        try {localStorage.setItem(GAIN_KEY,String(gainDb));} catch { /* Keep the committed in-memory level. */ }
+        return load(view.span,(view.window.start+view.window.end)/2);
+    };
+    const queueSpectrogramGain = () => {
+        clearGainTimer();const view=spectrogram.value,generation=openGeneration;
+        gainTimer=setTimeout(()=>{gainTimer=null;if(spectrogram.value===view && generation===openGeneration)commitSpectrogramGain();},300);
+    };
+    const resetSpectrogramGain = () => {draftSpectrogramGain(0);return commitSpectrogramGain();};
+    const cancelSpectrogramGainDraft = () => {clearGainTimer();if(spectrogram.value)spectrogram.value.draftGainDb=gainDb;};
+    const beginSpectrogramGainPointer = () => {clearGainTimer();if(spectrogram.value)spectrogram.value.gainKeyboard=false;};
     const spectrogramFrequencyLabel = () => {
         const view=spectrogram.value;
         if(!view)return '';
@@ -503,7 +530,8 @@ export function useAsrSpectrogram(state, utils) {
         });
     }
     return {spectrogram,canShowSpectrogram,openSpectrogram,closeSpectrogram,retrySpectrogram,
-        cancelSpectrogramPreparation:()=>{retryTarget=null;cancel();if(spectrogram.value){spectrogram.value.requestedSpan=spectrogram.value.span;spectrogram.value.loading=false;spectrogram.value.error='cancelled';}},setSpectrogramFrequency,spectrogramFrequencyLabel,
+        cancelSpectrogramPreparation:()=>{clearGainTimer();retryTarget=null;cancel();if(spectrogram.value){spectrogram.value.requestedSpan=spectrogram.value.span;spectrogram.value.loading=false;spectrogram.value.error='cancelled';}},setSpectrogramFrequency,spectrogramFrequencyLabel,
+        draftSpectrogramGain,commitSpectrogramGain,queueSpectrogramGain,resetSpectrogramGain,cancelSpectrogramGainDraft,beginSpectrogramGainPointer,
         spectrogramBoundary,setSpectrogramMarker,resetSpectrogramMarker,clickSpectrogram,adjustSpectrogramMarker,
         spectrogramMarkerPercent,spectrogramPlayheadPercent,spectrogramContextPercent,navigateSpectrogram,canZoomSpectrogram,canFitSpectrogram,fitSpectrogram,playSpectrogram,
         releaseSpectrogramPlayback:clearPlayback,spectrogramTiles:()=>spectrogram.value?.tiles || [],spectrogramStripStyle,

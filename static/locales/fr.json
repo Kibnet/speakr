@@ -2311,6 +2311,13 @@
     "storageTooltip": "Stockage : {{used}} sur {{quota}}"
   },
   "asrSpectrogram": {
+    "brightness": "Luminosité",
+    "brightnessHint": "Rend visibles les sons faibles. Ne modifie pas le volume audio.",
+    "resetBrightness": "Réinitialiser",
+    "decibels": "dB",
+    "updatingBrightness": "Mise à jour de la luminosité. ",
+    "displayedBrightness": "Affichage actuel :",
+    "error_gain": "Choisissez une luminosité de 0 à +40 dB par pas de 5 dB.",
     "title": "Segment spectrogram",
     "loading": "Building spectrogram…",
     "marker": "Split time",

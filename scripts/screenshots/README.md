@@ -151,3 +151,27 @@ keyboard selection, actual low-rate mono caps, stereo full-range22.05kHz on a
 320px screen, light/dark layouts, zoom/Fit/pan/marker and play/pause. All transcript
 write requests are blocked and asserted absent. Finalized videos, PNGs and JSON
 results stay local in `output/playwright/spectrum-frequency-ui/`.
+
+## Spectrogram brightness and quiet audio
+
+Use the same disposable synthetic fixture server, with its listening port mapped
+to localhost:8921. Never mount a production database or uploads. The fixture accepts
+`audio_amplitude` between 0.001 and 1; the brightness run uses 0.002 for quiet tones
+and digital silence, plus 1 for a strong-signal control. The input WAV is unchanged.
+
+```powershell
+$env:SPEAKR_URL = 'http://127.0.0.1:8921'
+node scripts/screenshots/asr-spectrum-brightness-ui.mjs
+```
+
+Optional `SPEAKR_PLAYWRIGHT_MODULE`/`SPEAKR_CHROMIUM_PATH` select an installed
+runtime. `--before` captures the same quiet fixture against the baseline without
+the control. The current run checks a real pointer drag without preparing before
+release, keyboard adjustment, reset, failed-preparation applied-level labels and
+retry, segment/recording/modal transitions and reload persistence, zoom/Fit/pan,
+marker, play/pause and confirmed draft splitting on 1440/390/320px in dark/light themes. Transcript writes are
+blocked and asserted absent. Videos, PNGs and JSON stay local in
+`output/playwright/spectrum-brightness-ui/`; inspect the 0/+20 dB PNGs and finalize
+the videos. Real pixel/silence/source-fingerprint assertions live in
+`tests/test_segment_spectrogram.py`, cache-level identity/reuse in
+`tests/test_spectrogram_cache.py`.

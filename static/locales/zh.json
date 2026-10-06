@@ -2311,6 +2311,13 @@
     "storageTooltip": "存储：{{used}} / {{quota}}"
   },
   "asrSpectrogram": {
+    "brightness": "亮度",
+    "brightnessHint": "显示较轻的声音，不改变音频音量。",
+    "resetBrightness": "重置",
+    "decibels": "dB",
+    "updatingBrightness": "正在更新亮度。",
+    "displayedBrightness": "当前显示：",
+    "error_gain": "请选择0到+40 dB的亮度，步长为5 dB。",
     "title": "Segment spectrogram",
     "loading": "Building spectrogram…",
     "marker": "Split time",

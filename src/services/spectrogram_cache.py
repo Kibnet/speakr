@@ -169,9 +169,10 @@ class SpectrogramCache:
             result['code'] = job['code']
         return result
 
-    def prepare(self, principal, recording, path, start, end, frequency, span, existing_id=None):
+    def prepare(self, principal, recording, path, start, end, frequency, span, existing_id=None, *, gain_db=0):
         start, end, span = self._bounds(start, end, span)
         frequency = spectra.validate_frequency(frequency)
+        gain_db = spectra.validate_gain(gain_db)
         try:
             fingerprint = spectra.source_fingerprint(path)
         except spectra.SpectrogramError:
@@ -180,7 +181,7 @@ class SpectrogramCache:
             raise
         if existing_id is None and math.ceil((end - start) / min(4 * span, 60)) > MAX_TILES:
             raise spectra.SpectrogramError('limit', 413)
-        key = hashlib.sha256(json.dumps([str(principal), recording, fingerprint, start, end, frequency, span]).encode()).hexdigest()
+        key = hashlib.sha256(json.dumps(['gain-v1', str(principal), recording, fingerprint, start, end, frequency, span, gain_db]).encode()).hexdigest()
         token = secrets.token_urlsafe(24)
         now = time.time()
         with self._state() as state:
@@ -212,7 +213,7 @@ class SpectrogramCache:
             state['jobs'][identifier] = job
         self._start_maintenance()
         try:
-            threading.Thread(target=self._prepare, args=(identifier, path, start, end, frequency, span),
+            threading.Thread(target=self._prepare, args=(identifier, path, start, end, frequency, span, gain_db),
                              daemon=True, name='spectrogram-prepare').start()
         except Exception:
             with self._state() as state:
@@ -248,7 +249,7 @@ class SpectrogramCache:
             raise spectra.SpectrogramError('timeout', 504)
         return job
 
-    def _prepare(self, identifier, path, start, end, frequency, span):
+    def _prepare(self, identifier, path, start, end, frequency, span, gain_db=0):
         started = time.monotonic()
         directory = self.root / identifier
         try:
@@ -291,7 +292,7 @@ class SpectrogramCache:
                     if remaining <= 0:
                         raise spectra.SpectrogramError('timeout', 504)
                     rendered = spectra.render_tile(path, tile_start, tile_end, width, metadata,
-                                                   timeout=min(15, remaining))
+                                                   timeout=min(15, remaining), gain_db=gain_db)
                     if spectra.source_fingerprint(path) != fingerprint:
                         raise spectra.SpectrogramError('changed', 409)
                     with self._state() as state:
@@ -312,7 +313,7 @@ class SpectrogramCache:
                     job['manifest'] = {'start': display_start, 'end': display_end, 'duration': duration,
                                        'segmentStart': segment_start, 'segmentEnd': segment_end, 'span': span,
                                        'plotWidth': 1024, 'channels': channels, 'sampleRate': sample_rate,
-                                       'maxFrequency': output_rate / 2, 'tiles': tiles}
+                                       'maxFrequency': output_rate / 2, 'gainDb': gain_db, 'tiles': tiles}
                     if self._footprint(state) > MAX_BYTES:
                         raise spectra.SpectrogramError('limit', 413)
                     job['status'] = 'ready'; job['used'] = time.time()

@@ -14,6 +14,33 @@ from src.app import app, db
 from src.models import User, Recording, InternalShare
 
 
+@pytest.mark.parametrize('value', [None, True, False, -5, 45, 1, float('nan'), float('inf'), '20;evil', ''])
+def test_invalid_visual_gain_is_rejected(value):
+    with pytest.raises(spectra.SpectrogramError) as error:
+        spectra.validate_gain(value)
+    assert error.value.code == 'gain' and error.value.status == 400
+
+
+def test_quiet_signal_gain_preserves_silence_coordinates_and_audio(tmp_path):
+    import hashlib
+    rate = 16000
+    t = np.arange(rate * 4) / rate
+    signal = np.where(t < 2, np.sin(2 * np.pi * 1000 * t) * .001, 0)
+    path = tmp_path / 'quiet.wav'
+    with wave.open(str(path), 'wb') as file:
+        file.setnchannels(1); file.setsampwidth(2); file.setframerate(rate)
+        file.writeframes((signal * 32767).astype('<i2').tobytes())
+    fingerprint = hashlib.sha256(path.read_bytes()).hexdigest()
+    pictures = [np.asarray(Image.open(io.BytesIO(spectra.render_spectrogram(str(path), 0, 4, gain_db=gain).png)).convert('RGB')) for gain in (0, 20, 40)]
+    # The 1kHz band stays at the same frequency; black digital silence is not lifted.
+    levels = [image[215:231, 50:450].mean() for image in pictures]
+    assert levels[1] > levels[0] * 1.3 and levels[2] > levels[1]
+    for image in pictures:
+        assert image[:, 650:950].max() == 0
+        assert abs(image[:, 200].max(axis=1).argmax() - 224) < 6
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == fingerprint
+
+
 @pytest.fixture
 def audio_file(tmp_path):
     rate = 16000
@@ -162,6 +189,28 @@ def client_for(user_id=None):
         with client.session_transaction() as session:
             session['_user_id'] = str(user_id); session['_fresh'] = True
     return client
+
+
+@pytest.mark.parametrize('gain', [None, True, False, -5, 45, 1, 'evil', '20', 20.0])
+def test_prepare_rejects_invalid_gain(recording_users, gain):
+    recording, owner, _ = recording_users
+    with patch.dict(app.config, WTF_CSRF_ENABLED=False):
+        response = client_for(owner).post(f'/api/recordings/{recording}/spectrogram/prepare', json={'start': 0, 'end': 2, 'span': 2, 'gainDb': gain})
+    assert response.status_code == 400 and response.json['code'] == 'gain'
+
+
+def test_legacy_spectrum_optional_gain_and_default_are_reported(recording_users):
+    recording, owner, _ = recording_users
+    client = client_for(owner)
+    base = f'/api/recordings/{recording}/spectrogram?start=0&end=2'
+    normal = client.get(base)
+    bright = client.get(base + '&gainDb=20')
+    assert normal.status_code == bright.status_code == 200
+    assert normal.headers['X-Spectrogram-Gain-Db'] == '0'
+    assert bright.headers['X-Spectrogram-Gain-Db'] == '20'
+    assert normal.data != bright.data
+    invalid = client.get(base + '&gainDb=999')
+    assert invalid.status_code == 400 and invalid.json['code'] == 'gain'
 
 
 def test_endpoint_owner_and_no_read_for_forbidden(recording_users):

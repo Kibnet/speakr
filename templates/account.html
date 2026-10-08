@@ -3467,11 +3467,24 @@ curl "https://your-speakr-instance.com/api/recordings?token=YOUR_TOKEN_HERE"</co
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
                     const samples = data.samples || [];
+                    let manualUnavailable = false;
+                    try {
+                        const manualResponse = await fetch(`/speakers/${speaker.id}/manual_voice_samples`);
+                        if (!manualResponse.ok) throw new Error('manual unavailable');
+                        const manualData = await manualResponse.json();
+                        samples.push(...(manualData.samples || []).map(sample => ({...sample, source:'manual-range'})));
+                    } catch {manualUnavailable = true;}
                     container.innerHTML = '';
                     const hint = document.createElement('p');
                     hint.className = 'text-[10px] text-[var(--text-muted)] mb-1';
                     hint.textContent = vt('voiceProfiles.hint', 'Voice matching compares new recordings with these samples. Remove one that belongs to someone else.');
                     container.appendChild(hint);
+                    if (manualUnavailable) {
+                        const warning = document.createElement('p');
+                        warning.className = 'text-[10px] text-[var(--text-danger)]';
+                        warning.textContent = vt('manualVoice.errors.unavailable', 'Manual samples are unavailable.');
+                        container.appendChild(warning);
+                    }
                     if (!samples.length) {
                         const empty = document.createElement('p');
                         empty.className = 'text-[10px] text-[var(--text-muted)] italic';
@@ -3482,23 +3495,36 @@ curl "https://your-speakr-instance.com/api/recordings?token=YOUR_TOKEN_HERE"</co
                     samples.forEach(sample => {
                         const row = document.createElement('div');
                         row.className = 'flex items-center gap-2 py-1 border-t border-[var(--border-primary)] text-[10px]';
+                        if (sample.source === 'manual-range') row.dataset.testid = `account-manual-sample-${sample.id}`;
                         const info = document.createElement('div');
                         info.className = 'flex-1 min-w-0';
-                        const title = document.createElement(sample.recording_id ? 'a' : 'span');
-                        title.className = 'block truncate text-[var(--text-secondary)]' + (sample.recording_id ? ' hover:text-[var(--text-accent)]' : '');
-                        if (sample.recording_id) title.href = `/recordings/${sample.recording_id}`;
+                        const hasSource = !!sample.recording_id && (sample.source !== 'manual-range' || sample.source_available);
+                        const title = document.createElement(hasSource ? 'a' : 'span');
+                        title.className = 'block truncate text-[var(--text-secondary)]' + (hasSource ? ' hover:text-[var(--text-accent)]' : '');
+                        if (hasSource) title.href = `/recordings/${sample.recording_id}`;
                         title.textContent = sample.source === 'legacy'
                             ? vt('voiceProfiles.legacy', 'Earlier voice profile')
-                            : (sample.recording_title || vt('voiceProfiles.deletedRecording', 'Deleted recording'));
+                            : sample.source === 'manual-range' && !hasSource
+                                ? vt('manualVoice.sourceUnavailable', 'Source recording deleted or access unavailable')
+                                : (sample.recording_title || vt('voiceProfiles.deletedRecording', 'Deleted recording'));
                         const meta = document.createElement('span');
                         meta.className = 'block truncate text-[var(--text-muted)]';
                         const parts = [];
+                        if (sample.source === 'manual-range') {
+                            const clock = ms => {
+                                const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60;
+                                return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms%1000).padStart(3,'0')}`;
+                            };
+                            parts.push(`${clock(sample.start_ms)}–${clock(sample.end_ms)}`);
+                            parts.push(`${((sample.end_ms-sample.start_ms)/1000).toFixed(3)} ${vt('manualVoice.seconds','s')}`);
+                        }
                         if (sample.label) parts.push(sample.label);
                         if (sample.speech_seconds != null) parts.push(formatSeconds(sample.speech_seconds));
                         parts.push(sample.source === 'auto' ? vt('voiceProfiles.auto', 'auto-labelled')
+                                 : sample.source === 'manual-range' ? vt('manualVoice.manualRange', 'manual range')
                                  : sample.source === 'legacy' ? vt('voiceProfiles.legacyWeight', `weight ${sample.weight}`, { count: sample.weight })
                                  : vt('voiceProfiles.confirmed', 'confirmed'));
-                        if (!sample.in_current_space) parts.push(vt('voiceProfiles.anotherModel', 'another model'));
+                        if (sample.in_current_space === false) parts.push(vt('voiceProfiles.anotherModel', 'another model'));
                         meta.textContent = parts.join(' · ');
                         info.appendChild(title);
                         info.appendChild(meta);
@@ -3516,7 +3542,7 @@ curl "https://your-speakr-instance.com/api/recordings?token=YOUR_TOKEN_HERE"</co
                                 const r = sample.id == null
                                     ? await fetch(`/speakers/${speaker.id}/clear_embeddings`, {
                                         method: 'POST', headers: csrf ? { 'X-CSRFToken': csrf } : {} })
-                                    : await fetch(`/speakers/${speaker.id}/voice_samples/${sample.id}`, {
+                                    : await fetch(`/speakers/${speaker.id}/${sample.source === 'manual-range' ? 'manual_voice_samples' : 'voice_samples'}/${sample.id}`, {
                                         method: 'DELETE', headers: csrf ? { 'X-CSRFToken': csrf } : {} });
                                 const body = await r.json();
                                 if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);

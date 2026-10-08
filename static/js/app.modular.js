@@ -12,6 +12,7 @@ import { useTranscription } from './modules/composables/transcription.js';
 import { useSpeakers } from './modules/composables/speakers.js';
 import { useSpeakerModal } from './modules/composables/speaker-modal.js';
 import { useTranscriptWorkspace } from './modules/composables/transcriptWorkspace.js';
+import { useManualVoiceSamples } from './modules/composables/manual-voice-samples.js';
 import { useChat } from './modules/composables/chat.js';
 import { useTags } from './modules/composables/tags.js';
 import { usePWA } from './modules/composables/pwa.js';
@@ -2773,6 +2774,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const speakersComposable = useSpeakers(state, utils, processedTranscription);
             const speakerModalComposable = useSpeakerModal(state, utils);
             const transcriptWorkspaceComposable = useTranscriptWorkspace(state, utils, transcriptionComposable, speakersComposable, speakerModalComposable);
+            const manualVoiceComposable = useManualVoiceSamples(state, {...utils, pauseOtherAudio: () => {
+                document.querySelectorAll('audio,video').forEach(player => player.pause());
+            }});
             utils.openWorkspace = transcriptionComposable.openAsrEditorModal;
             utils.closeWorkspace = transcriptionComposable.closeAsrEditorModal;
             utils.saveWorkspace = transcriptionComposable.saveAsrTranscription;
@@ -4543,6 +4547,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ...speakersComposable,
                 ...speakerModalComposable,
                 ...transcriptWorkspaceComposable,
+                ...manualVoiceComposable,
                 ...chatComposable,
                 ...tagsComposable,
                 ...foldersComposable,

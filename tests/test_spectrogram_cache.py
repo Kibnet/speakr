@@ -44,6 +44,9 @@ def test_gain_cache_identity_applied_manifest_reuse_and_wrong_existing_id(source
     cache = SpectrogramCache(tmp_path / 'gain-cache')
     path = str(source)
     normal = wait_ready(cache, cache.prepare(1, 9, path, 0, 2, '8000', 2), path)
+    # Ready metadata can precede the worker's finally acknowledgement. A new
+    # gain is a different render, so wait until its per-principal slot is free.
+    wait_worker_ack(cache, normal['id'])
     brighter = wait_ready(cache, cache.prepare(1, 9, path, 0, 2, '8000', 2, gain_db=20), path)
     assert normal['manifest']['gainDb'] == 0 and brighter['manifest']['gainDb'] == 20
     assert normal['id'] != brighter['id']

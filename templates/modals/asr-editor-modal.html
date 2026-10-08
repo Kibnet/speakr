@@ -1,9 +1,10 @@
 <!-- Shared speaker/transcript list and tools for one selected draft segment. -->
-<div v-if="showAsrEditorModal" @click.self="closeAsrEditorModal" class="modal-overlay" data-testid="asr-editor">
+<div v-if="showAsrEditorModal" @click.self="closeAsrEditorModal" class="modal-overlay" data-testid="asr-editor" :inert="manualVoiceOpen">
  <div class="modal-panel modal-panel--xl sw-workplace spk-modal tw-workspace">
   <div class="sw-content" :inert="asrCloseDecision || !!asrDeleteCandidate">
   <header class="modal-header">
    <h3 class="modal-title" v-text="t('transcriptWorkspace.title')"></h3>
+   <button class="btn btn--ghost btn--sm" data-testid="manual-voice-open" @click="openManualVoice" v-text="t('manualVoice.title')"></button>
    <button data-testid="asr-editor-close" @click="closeAsrEditorModal" class="modal-close" :aria-label="t('buttons.close')"><i class="fas fa-times"></i></button>
   </header>
   <div v-if="modalSpeakers.length > 16" class="banner banner--warn"><i class="fas fa-exclamation-triangle"></i><span v-text="t('help.moreSpeakersThanColors')"></span><span v-text="t('help.youHaveXSpeakers', {count:modalSpeakers.length})"></span></div>
